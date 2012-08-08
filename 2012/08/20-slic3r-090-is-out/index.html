@@ -149,45 +149,51 @@
     </div>
     <div style="width: 500px">
       
-<h2 class="post">0.6.0 is out!</h2>
+<h2 class="post">Slic3r 0.9.0 is out!</h2>
 <div class="information">
-   <span class="date">2012-01-21</span>
+   <span class="date">2012-08-08</span>
 </div>
 
-After much work, a new beefy release of Slic3r is ready for download.
+<p>Exciting new release, with many improvements and new features including <b>support for multiple extruders</b> and a redesigned <b>graphical interface</b>.</p>
+
+<p>This release and all recent work about support material and multiple extruders is sponsored by <a href="http://www.lulzbot.com/"><b>LulzBot</b></a>. Check out their products!</p>
+
+<p>Also thanks to Henrik Brix Andersen who worked on creating the wizard and improving the user experience, and to Mark Hindness who is focusing on speed and memory optimizations. New features are being researched on, stay tuned for next releases!</p>
+
+<p align="center"><a href="/images/screenshot2_full.png"><img src="/images/screenshot2.png" /></a></p>
 
 <h4>New features:</h4>
 <ul>
-    <li><b>thin walls!</b></li>
-    <li>new <i>Output Filename Format</i> option to allow for complex output filenames using option values (like <i>foo_3perimeters_0.15height.gcode</i>)</li>
-    <li>automatic retraction at the end of the print</li>
+    <li>new <b>graphical interface</b>, with <b>multiple presets</b> and automatic <b>loading of last settings</b></li>
+    <li>support for <b>multiple extruders</b></li>
+    <li><b>wizard</b> for new users (developed by Henrik Brix Andersen)</li>
+    <li>new option to set a <b>different speed for external perimeters</b></li>
+    <li>new option to set <b>extrusion width for support material</b></li>
 </ul>
 
 <h4>Improvements:</h4>
 <ul>
-    <li>much better overlap between infill and perimeters in those situations where previous version was still producing gaps</li>
-    <li>smarter order for hole perimeters to save travel and time</li>
-    <li>large internal refactoring (less memory and some speed)</li>
-    <li>bridges now have higher priority than other solid regions</li>
-    <li>loops are now closed better</li>
-    <li>use solid print speed for internal solid layers too</li>
-    <li>checkbox in GUI to enable comments in G-code</li>
-    <li>warn if no layers were detected</li>
+    <li><b>better flow math</b> to get more continuous surfaces and better dimensional accuracy (note: you might need to revert your extrusion multiplier to 1 if you had set it to a lower value)</li>
+    <li>fill the gaps during normal infill to <b>avoid extra travel</b></li>
+    <li><b>faster</b> thin walls processing</li>
+    <li>many <b>speed and memory optimizations</b> (contributed by Mark Hindness)</li>
+    <li>removed the confirmation modal dialogs, use Growl/DBus for notifications when available</li>
 </ul>
 
 <h4>Changes:</h4>
 <ul>
-    <li>Windows package is now distributed as a ZIP file rather than a self-extracting executable</li>
+    <li>don't reset E when the Makerbot flavor is selected</li>
+    <li>allow scaling factor to be at least 2540 to allow the conversion of inch models</li>
+    <li>First layer extrusion width is set to 200% over layer height by default</li>
 </ul>
 
 <h4>Bugfixes:</h4>
 <ul>
-    <li>some island having no holes and contained in holes themselves were ignored</li>
-    <li>fatal error in arc detection code</li>
-    <li>wrong month number in output</li>
-    <li>small regions were infilled even with fill_density = 0</li>
-    <li>fill was escaping perimeters near some corners</li>
-    <li>other fatal errors removed, especially when dealing with dirty files</li>
+    <li>fixed regression causing objects to be 0.1mm larger</li>
+    <li>flow settings were almost ignored</li>
+    <li>brim was extruded multiple times when sequential printing was enabled</li>
+    <li>brim did not take support material into account</li>
+    <li>some infill was still generated even when density was set to zero</li>
 </ul>
 
       <div style="clear: both"></div>

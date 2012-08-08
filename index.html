@@ -4,7 +4,7 @@
   <meta http-equiv="Content-Type" content="txt/html; charset=UTF-8">
   <meta name="Generator" content="BlazeBlogger 1.2.0">
   <meta name="Copyright" content="&copy; 2012 Alessandro Ranellucci">
-  <meta name="Date" content="Sun Jun 24 21:39:18 2012">
+  <meta name="Date" content="Wed Aug  8 17:11:47 2012">
   <meta name="Description" content="STL-to-GCODE translator for RepRap printers">
   <meta name="Keywords" content="reprap,3D print,prusa,prusa mendel,skeinforge">
   <link rel="stylesheet" href="default.css" type="text/css">
@@ -88,7 +88,7 @@
     <div class="description">
       STL-to-GCODE translator for RepRap printers
     </div>
-    <p>So you've got a 3D printer and a file to print. You need a software to convert it to a series of layers and to generate the toolpaths to build it.</p><img src="/images/screenshot.png" style="float: right">
+    <p>So you've got a 3D printer and a file to print. You need a software to convert it to a series of layers and to generate the toolpaths to build it.</p><a href="/images/screenshot1_full.png"><img src="/images/screenshot1.png" style="float: right"></a>
     <p>Here comes Slic3r! Its features are:</p>
     <ul>
       <li><strong>speed</strong></li>
@@ -105,7 +105,8 @@
     <div style="float: right" class="sidebar">
       <h3>News Archive</h3>
       <ul id="archive">
-        <li><a href="2012/06">June 2012 (2)</a></li>
+        <li><a href="2012/08">August 2012 (1)</a></li>
+<li><a href="2012/06">June 2012 (2)</a></li>
 <li><a href="2012/05">May 2012 (2)</a></li>
 <li><a href="2012/04">April 2012 (2)</a></li>
 <li><a href="2012/03">March 2012 (1)</a></li>
@@ -148,6 +149,53 @@
     </div>
     <div style="width: 500px">
       
+<h2 class="post"><a href="2012/08/20-slic3r-090-is-out" rel="permalink">Slic3r 0.9.0 is out!</a></h2>
+<div class="information">
+   <span class="date">2012-08-08</span>
+</div>
+
+<p>Exciting new release, with many improvements and new features including <b>support for multiple extruders</b> and a redesigned <b>graphical interface</b>.</p>
+
+<p>This release and all recent work about support material and multiple extruders is sponsored by <a href="http://www.lulzbot.com/"><b>LulzBot</b></a>. Check out their products!</p>
+
+<p>Also thanks to Henrik Brix Andersen who worked on creating the wizard and improving the user experience, and to Mark Hindness who is focusing on speed and memory optimizations. New features are being researched on, stay tuned for next releases!</p>
+
+<p align="center"><a href="/images/screenshot2_full.png"><img src="/images/screenshot2.png" /></a></p>
+
+<h4>New features:</h4>
+<ul>
+    <li>new <b>graphical interface</b>, with <b>multiple presets</b> and automatic <b>loading of last settings</b></li>
+    <li>support for <b>multiple extruders</b></li>
+    <li><b>wizard</b> for new users (developed by Henrik Brix Andersen)</li>
+    <li>new option to set a <b>different speed for external perimeters</b></li>
+    <li>new option to set <b>extrusion width for support material</b></li>
+</ul>
+
+<h4>Improvements:</h4>
+<ul>
+    <li><b>better flow math</b> to get more continuous surfaces and better dimensional accuracy (note: you might need to revert your extrusion multiplier to 1 if you had set it to a lower value)</li>
+    <li>fill the gaps during normal infill to <b>avoid extra travel</b></li>
+    <li><b>faster</b> thin walls processing</li>
+    <li>many <b>speed and memory optimizations</b> (contributed by Mark Hindness)</li>
+    <li>removed the confirmation modal dialogs, use Growl/DBus for notifications when available</li>
+</ul>
+
+<h4>Changes:</h4>
+<ul>
+    <li>don't reset E when the Makerbot flavor is selected</li>
+    <li>allow scaling factor to be at least 2540 to allow the conversion of inch models</li>
+    <li>First layer extrusion width is set to 200% over layer height by default</li>
+</ul>
+
+<h4>Bugfixes:</h4>
+<ul>
+    <li>fixed regression causing objects to be 0.1mm larger</li>
+    <li>flow settings were almost ignored</li>
+    <li>brim was extruded multiple times when sequential printing was enabled</li>
+    <li>brim did not take support material into account</li>
+    <li>some infill was still generated even when density was set to zero</li>
+</ul>
+
 <h2 class="post"><a href="2012/06/19-slic3r-084-is-out" rel="permalink">Slic3r 0.8.4 is out</a></h2>
 <div class="information">
    <span class="date">2012-06-24</span>
@@ -474,30 +522,6 @@ After much work, a new beefy release of Slic3r is ready for download.
     <li>fill was escaping perimeters near some corners</li>
     <li>other fatal errors removed, especially when dealing with dirty files</li>
 </ul>
-
-<h2 class="post"><a href="2012/01/10-here-and-there-in-the-slic3r-community" rel="permalink">Here and there in the Slic3r community</a></h2>
-<div class="information">
-   <span class="date">2012-01-07</span>
-</div>
-
-<p>Okay, Slic3r was born in September and in a few months I was able to bring it beyond what I expected, in terms of features, speed and stability. Things have started to <b>change very quickly</b>, and <b>community</b> is playing a big role in testing and discussing new features.</p>
-
-<p>A <a href="http://forums.reprap.org/list.php?263"><b>Slic3r forum</b></a> was created in the official RepRap forums. Also, about 50 people sit in the <a href="http://webchat.freenode.net/">FreeNode</a> IRC #slic3r channel.</p>
-
-<p>Some notable things appeared in the web recently. Neil Underwood (well known as <a href="http://repraplogphase.blogspot.com/">Spacexula</a>) posted pictures and a video of a print he did on the <a href="http://blog.reprap.org/2011/12/001-layer-height-on-prusa-mendel.html">official RepRap blog</a>. The first outstanding thing is that he reached a <b>0.01mm layer height</b>. The second outstanding thing is that <b>he used Slic3r</b>!</p>
-
-<p>Richard H. (well known as <a href="http://richrap.blogspot.com/">Richrap</a>) is posting a multipart <a href="http://richrap.blogspot.com/2012/01/slic3r-is-nicer-part-1-settings-and.html"><b>illustrated Slic3r guide</b></a> to his colorful blog. It's a very good work, so thank you Rich!</p>
-
-<p>Michael Andresen (well known as <a href="http://captain-slow.dk/">blddk</a>) posted <a href="http://captain-slow.dk/2011/12/29/slic3r-fill-options/
-http://captain-slow.dk/2011/12/29/slic3r-fill-options/">some screenshots</a> to show differences between the various <b>fill patterns</b> available in Slic3r. Don't miss the interesting article Gary Hodgson posted about <a href="http://garyhodgson.com/reprap/2012/01/thoughts-on-fill-algorithms/">new possible fill patterns</a>.</p>
-
-<p><a href="http://techpaladin.com/">Pointedstick</a> (Nathaniel Graham) posted two good blog articles about <b>high-resolution printing</b>, in which he talks about using Slic3r: <a href="http://techpaladin.com/2011/11/21/getting-all-the-pieces-to-fit-together/">this</a> and <a href="http://techpaladin.com/2011/12/21/nathaniels-guide-to-high-detail-printing/">that</a>.</p>
-
-<p><a href="http://brazenartifice.wordpress.com/">Brazen Artifice</a> posted a couple articles about <a href="http://brazenartifice.wordpress.com/2011/12/31/retraction-solution-with-marlin-pronterface-and-slic3r/">retraction</a> and <a href="http://brazenartifice.wordpress.com/2011/12/05/teaching-slic3r-to-remember-your-settings/">preloading last settings</a>.
-
-<p>Sparr posted a picture of an <a href="http://blog.freesideatlanta.org/2011/12/reprap-firmware-comparison-smoother.html">object he printed</a> with and without enabling the <b>native arcs support</b> in Slic3r.</p>
-
-<p>The good <a href="https://github.com/kliment">Kliment Yanev</a> added an option to customize the slicing command in his excellent <a href="https://github.com/kliment/Printrun">Pronterface</a>, to allow for easy <b>integration with Slic3r</b>. (See the <a href="https://github.com/alexrj/Slic3r/blob/master/README.markdown">Slic3r README</a> for guidance.)</p>
 <div class="previous"><a href="index1.html" rel="prev">&laquo; Previous</a></div>
 
       <div style="clear: both"></div>

@@ -6,6 +6,39 @@
   <description>STL-to-GCODE translator for RepRap printers</description>
   <generator>BlazeBlogger 1.2.0</generator>
   <item>
+    <title>Slic3r 0.9.1 is out!</title>
+    <link>http://slic3r.org/blog/2012/08/21-slic3r-091-is-out/</link>
+    <guid>http://slic3r.org/blog/2012/08/21-slic3r-091-is-out/</guid>
+    <pubDate>Fri, 10 Aug 2012 00:00:01 GMT</pubDate>
+    <description><![CDATA[
+<p>Wow - the 0.9.0 release produced an impressive amount of feedback. Here's a quick new release for your summer.</p>
+
+<h4>New features:</h4>
+<ul>
+    <li>retraction settings can be customized for each extruder now</li>
+    <li>a 64bit package is now available for Windows too (Win7 users will benefit from this)</li>
+</ul>
+
+<h4>Improvements:</h4>
+<ul>
+    <li>allow exporting with the <i>.g</i> extension too</li>
+    <li>accept multiple <i>--load</i> arguments for GUI too</li>
+</ul>
+
+<h4>Changes:</h4>
+<ul>
+    <li>pressing the Enter key from the configuration tabs doesn't trigger slicing anymore</li>
+</ul>
+
+<h4>Bugfixes:</h4>
+<ul>
+    <li>exporting configuration produced unexpected/incomplete behavior when an external configuration was loaded before</li>
+    <li>saving a printer preset with less extruder than before resulted in the same number of extruders</li>
+    <li>skirt height and other options were limited to 100</li>
+    <li>random failures to load presets and config files</li>
+</ul>    ]]></description>
+  </item>
+  <item>
     <title>Slic3r 0.9.0 is out!</title>
     <link>http://slic3r.org/blog/2012/08/20-slic3r-090-is-out/</link>
     <guid>http://slic3r.org/blog/2012/08/20-slic3r-090-is-out/</guid>
@@ -353,49 +386,6 @@ This is a very important update: don't miss it and enjoy the goodies!
     <li>models with rounded walls had small useless infill regions</li>
     <li>small perimeter speed was applied to all holes too, regardless of their size</li>
     <li>fixed some fatal errors</li>
-</ul>
-    ]]></description>
-  </item>
-  <item>
-    <title>0.6.0 is out!</title>
-    <link>http://slic3r.org/blog/2012/01/11-060-is-out/</link>
-    <guid>http://slic3r.org/blog/2012/01/11-060-is-out/</guid>
-    <pubDate>Sat, 21 Jan 2012 00:00:01 GMT</pubDate>
-    <description><![CDATA[
-After much work, a new beefy release of Slic3r is ready for download.
-
-<h4>New features:</h4>
-<ul>
-    <li><b>thin walls!</b></li>
-    <li>new <i>Output Filename Format</i> option to allow for complex output filenames using option values (like <i>foo_3perimeters_0.15height.gcode</i>)</li>
-    <li>automatic retraction at the end of the print</li>
-</ul>
-
-<h4>Improvements:</h4>
-<ul>
-    <li>much better overlap between infill and perimeters in those situations where previous version was still producing gaps</li>
-    <li>smarter order for hole perimeters to save travel and time</li>
-    <li>large internal refactoring (less memory and some speed)</li>
-    <li>bridges now have higher priority than other solid regions</li>
-    <li>loops are now closed better</li>
-    <li>use solid print speed for internal solid layers too</li>
-    <li>checkbox in GUI to enable comments in G-code</li>
-    <li>warn if no layers were detected</li>
-</ul>
-
-<h4>Changes:</h4>
-<ul>
-    <li>Windows package is now distributed as a ZIP file rather than a self-extracting executable</li>
-</ul>
-
-<h4>Bugfixes:</h4>
-<ul>
-    <li>some island having no holes and contained in holes themselves were ignored</li>
-    <li>fatal error in arc detection code</li>
-    <li>wrong month number in output</li>
-    <li>small regions were infilled even with fill_density = 0</li>
-    <li>fill was escaping perimeters near some corners</li>
-    <li>other fatal errors removed, especially when dealing with dirty files</li>
 </ul>
     ]]></description>
   </item>

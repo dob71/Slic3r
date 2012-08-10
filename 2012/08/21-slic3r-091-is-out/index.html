@@ -149,57 +149,37 @@
     </div>
     <div style="width: 500px">
       
-<h2 class="post">0.7.2 is out!</h2>
+<h2 class="post">Slic3r 0.9.1 is out!</h2>
 <div class="information">
-   <span class="date">2012-04-16</span>
+   <span class="date">2012-08-10</span>
 </div>
 
-We have a shiny new beautiful icon now! Thanks to <a href="http://twitter.com/cdugd/">Corey Daniels</a> for designing it.
-
-<h4>Major new features:</h4>
-<ul>
-    <li><b>Honeycomb (hexagonal) infill pattern!</b></li>
-    <li><b>SVG export</b> for DLP printers and other purposes</li>
-    <li><b>automatic arrangement</b> for printing multiple copies of the same object (thanks Triffid Hunter for contributing this one)</li>
-</ul>
+<p>Wow - the 0.9.0 release produced an impressive amount of feedback. Here's a quick new release for your summer.</p>
 
 <h4>New features:</h4>
 <ul>
-    <li>new <b>Reslice</b> command in the File menu</li>
-    <li>customizable G-code to be executed at layer change</li>
+    <li>retraction settings can be customized for each extruder now</li>
+    <li>a 64bit package is now available for Windows too (Win7 users will benefit from this)</li>
 </ul>
 
 <h4>Improvements:</h4>
 <ul>
-    <li>huge <b>speed boost (20%-50%)</b> and more parallelization of long-running algorithms</li>
-    <li>new implementation of <b>support material</b> generation</li>
-    <li>don't slow down travel moves when cooling is enabled</li>
-    <li>new <i>--threads</i> command line option to set number of parallel jobs</li>
-</ul>
-
-<h4>Minor improvements:</h4>
-<ul>
-    <li>enable G0 automatically for Mach3</li>
-    <li>allow decimal values for skirt/duplicate distances and speeds</li>
-    <li>added the coordinates of the first non-manifold edge to the warning messages</li>
-    <li>only output M109 if there's none in the user-supplied start G-code</li>
-    <li>make sure all concentric fill loops are extruded in the same direction to prevent sudden changes of direction</li>
+    <li>allow exporting with the <i>.g</i> extension too</li>
+    <li>accept multiple <i>--load</i> arguments for GUI too</li>
 </ul>
 
 <h4>Changes:</h4>
 <ul>
-    <li><i>--duplicate-x</i> and <i>--duplicate-y</i> were merged into a single <i>--duplicate-grid</i> option</li>
+    <li>pressing the Enter key from the configuration tabs doesn't trigger slicing anymore</li>
 </ul>
 
 <h4>Bugfixes:</h4>
 <ul>
-    <li>some holes were filled</li>
-    <li>the <i>No Extrusion</i> mode had no effect</li>
-    <li>use M109 for bed control (Makerbot)</li>
-    <li>use P instead of S for M106 (Mach3)</li>
-    <li>fixed some fatal errors</li>
+    <li>exporting configuration produced unexpected/incomplete behavior when an external configuration was loaded before</li>
+    <li>saving a printer preset with less extruder than before resulted in the same number of extruders</li>
+    <li>skirt height and other options were limited to 100</li>
+    <li>random failures to load presets and config files</li>
 </ul>
-
       <div style="clear: both"></div>
     </div>
   </div>

@@ -1,0 +1,27 @@
+
+<p>Wow - the 0.9.0 release produced an impressive amount of feedback. Here's a quick new release for your summer.</p>
+
+<h4>New features:</h4>
+<ul>
+    <li>retraction settings can be customized for each extruder now</li>
+    <li>a 64bit package is now available for Windows too (Win7 users will benefit from this)</li>
+</ul>
+
+<h4>Improvements:</h4>
+<ul>
+    <li>allow exporting with the <i>.g</i> extension too</li>
+    <li>accept multiple <i>--load</i> arguments for GUI too</li>
+</ul>
+
+<h4>Changes:</h4>
+<ul>
+    <li>pressing the Enter key from the configuration tabs doesn't trigger slicing anymore</li>
+</ul>
+
+<h4>Bugfixes:</h4>
+<ul>
+    <li>exporting configuration produced unexpected/incomplete behavior when an external configuration was loaded before</li>
+    <li>saving a printer preset with less extruder than before resulted in the same number of extruders</li>
+    <li>skirt height and other options were limited to 100</li>
+    <li>random failures to load presets and config files</li>
+</ul>

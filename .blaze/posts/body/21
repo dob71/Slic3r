@@ -1,6 +1,8 @@
 
 <p>Wow - the 0.9.0 release produced an impressive amount of feedback. Here's a quick new release for your summer.</p>
 
+<p>This release and all recent work about support material and multiple extruders is sponsored by <a href="http://www.lulzbot.com/"><b>LulzBot</b></a>. Check out their products!</p>
+
 <h4>New features:</h4>
 <ul>
     <li>retraction settings can be customized for each extruder now</li>

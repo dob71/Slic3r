@@ -219,7 +219,8 @@ sub save_settings {
 
 sub GetConfigDir {
     # If we are not included into the X2SW bundle, use standard path
-    my $x2sw_bundle_prof_path = dirname($FindBin::Bin) . '/.x2sw';
+    my $x2sw_bundle_prof_path = dirname($FindBin::Bin=~s/\/bin$//) . '/.x2sw';
+    Slic3r::debugf "Testing path: $x2sw_bundle_prof_path\n";
     if(! -e $x2sw_bundle_prof_path) { 
         Slic3r::debugf "Using standard config path\n";
         return Wx::StandardPaths::Get->GetUserDataDir;

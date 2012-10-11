@@ -44,6 +44,17 @@ my $cli_config = Slic3r::Config->new_from_cli(%cli_options);
 
 # load configuration files
 my @external_configs = ();
+
+my $guiIniPath = Slic3r::Config->GetConfigDir();
+if (-f "$guiIniPath/slic3r.ini") {
+    my $ini = eval { Slic3r::Config->read_ini("$guiIniPath/slic3r.ini") };
+    my $presets = $ini->{presets} if $ini;
+    foreach my $preset (keys %{$presets}) {
+        push @external_configs, 
+             Slic3r::Config->load("$guiIniPath/$preset/$presets->{$preset}");
+    }
+}
+
 if ($opt{load}) {
     foreach my $configfile (@{$opt{load}}) {
         if (-e $configfile) {

@@ -45,14 +45,32 @@ my $cli_config = Slic3r::Config->new_from_cli(%cli_options);
 
 # load configuration files
 my @external_configs = ();
+my @filament_presets = ();
+my $filament_config;
 
 my $guiIniPath = Slic3r::Config->GetConfigDir();
 if (-f "$guiIniPath/slic3r.ini") {
     my $ini = eval { Slic3r::Config->read_ini("$guiIniPath/slic3r.ini") };
     my $presets = $ini->{presets} if $ini;
     foreach my $preset (keys %{$presets}) {
+        if ($preset =~ /^filament$/) {
+             $filament_config = Slic3r::Config->load("$guiIniPath/$preset/$presets->{$preset}");
+             next;
+        }
+        if ($preset =~ /^filament_(\d+)/) {
+             $filament_presets[$1] = Slic3r::Config->load("$guiIniPath/filament/$presets->{$preset}" . '.ini');
+             next;
+        }
         push @external_configs, 
              Slic3r::Config->load("$guiIniPath/$preset/$presets->{$preset}");
+    }
+
+    # apply additional filament configs
+    foreach my $fconfig (@filament_presets) {
+        foreach my $fopt_key (keys %$fconfig) {
+            next unless ref $filament_config->get($fopt_key) eq 'ARRAY';
+            push @{ $filament_config->get($fopt_key) }, $fconfig->get($fopt_key)->[0];
+        }
     }
 }
 
@@ -71,7 +89,7 @@ if ($opt{load}) {
 
 # merge configuration
 my $config = Slic3r::Config->new_from_defaults;
-$config->apply($_) for @external_configs, $cli_config;
+$config->apply($_) for @external_configs, $filament_config, $cli_config;
 
 # save configuration
 if ($opt{save}) {

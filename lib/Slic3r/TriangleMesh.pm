@@ -70,6 +70,26 @@ sub BUILD {
     }
 }
 
+sub merge {
+    my $class = shift;
+    my @meshes = @_;
+    
+    my $vertices = [];
+    my $facets = [];
+    
+    foreach my $mesh (@meshes) {
+        my $v_offset = @$vertices;
+        push @$vertices, @{$mesh->vertices};
+        push @$facets, map {
+            my $f = [@$_];
+            $f->[$_] += $v_offset for -3..-1;
+            $f;
+        } @{$mesh->facets};
+    }
+    
+    return $class->new(vertices => $vertices, facets => $facets);
+}
+
 sub clone {
     my $self = shift;
     return (ref $self)->new(
@@ -134,7 +154,9 @@ sub check_manifoldness {
         warn sprintf "Warning: The input file contains a hole near edge %f-%f (not manifold). "
             . "You might want to repair it and retry, or to check the resulting G-code before printing anyway.\n",
             @{$self->edges->[$first_bad_edge_id]};
+        return 0;
     }
+    return 1;
 }
 
 sub unpack_line {
@@ -147,9 +169,8 @@ sub unpack_line {
 }
 
 sub make_loops {
-    my ($layer) = @_;
-    
-    my @lines = map unpack_line($_), @{$layer->lines};
+    my ($lines) = @_;
+    my @lines = map unpack_line($_), @$lines;
     
     # remove tangent edges
     {
@@ -219,7 +240,7 @@ sub make_loops {
             Slic3r::debugf "  this shouldn't happen and should be further investigated\n";
             if (0) {
                 require "Slic3r/SVG.pm";
-                Slic3r::SVG::output(undef, "same_point.svg",
+                Slic3r::SVG::output("same_point.svg",
                     lines       => [ map $_->line, grep !defined $_->[I_FACET_EDGE], @lines ],
                     red_lines   => [ map $_->line, grep defined $_->[I_FACET_EDGE], @lines ],
                     #points      => [ $self->vertices->[$point_id] ],
@@ -238,6 +259,7 @@ sub make_loops {
         (0..$#lines);
     
     my (@polygons, @failed_loops, %visited_lines) = ();
+    my $slicing_errors = 0;
     CYCLE: for (my $i = 0; $i <= $#lines; $i++) {
         my $line = $lines[$i];
         next if $visited_lines{$line};
@@ -252,24 +274,24 @@ sub make_loops {
                 $next_line = $lines[$by_a_id{$line->[I_B_ID]}];
             } else {
                 Slic3r::debugf "  line has no next_facet_index or b_id\n";
-                $layer->slicing_errors(1);
+                $slicing_errors = 1;
                 push @failed_loops, [@points] if @points;
                 next CYCLE;
             }
             
             if (!$next_line || $visited_lines{$next_line}) {
                 Slic3r::debugf "  failed to close this loop\n";
-                $layer->slicing_errors(1);
+                $slicing_errors = 1;
                 push @failed_loops, [@points] if @points;
                 next CYCLE;
             } elsif (defined $next_line->[I_PREV_FACET_INDEX] && $next_line->[I_PREV_FACET_INDEX] != $line->[I_FACET_INDEX]) {
                 Slic3r::debugf "  wrong prev_facet_index\n";
-                $layer->slicing_errors(1);
+                $slicing_errors = 1;
                 push @failed_loops, [@points] if @points;
                 next CYCLE;
             } elsif (defined $next_line->[I_A_ID] && $next_line->[I_A_ID] != $line->[I_B_ID]) {
                 Slic3r::debugf "  wrong a_id\n";
-                $layer->slicing_errors(1);
+                $slicing_errors = 1;
                 push @failed_loops, [@points] if @points;
                 next CYCLE;
             }
@@ -293,7 +315,7 @@ sub make_loops {
             if $Slic3r::debug;
     }
     
-    return [@polygons];
+    return ($slicing_errors, [@polygons]);
 }
 
 sub rotate {
@@ -335,7 +357,7 @@ sub align_to_origin {
     
     # calculate the displacements needed to 
     # have lowest value for each axis at coordinate 0
-    my @extents = $self->bounding_box;
+    my @extents = $self->extents;
     $self->move(map -$extents[$_][MIN], X,Y,Z);
 }
 
@@ -359,23 +381,14 @@ sub duplicate {
     $self->BUILD;
 }
 
-sub bounding_box {
+sub extents {
     my $self = shift;
-    my @extents = (map [undef, undef], X,Y,Z);
-    foreach my $vertex (@{$self->vertices}) {
-        for (X,Y,Z) {
-            $extents[$_][MIN] = $vertex->[$_] if !defined $extents[$_][MIN] || $vertex->[$_] < $extents[$_][MIN];
-            $extents[$_][MAX] = $vertex->[$_] if !defined $extents[$_][MAX] || $vertex->[$_] > $extents[$_][MAX];
-        }
-    }
-    return @extents;
+    return Slic3r::Geometry::bounding_box_3D($self->vertices);
 }
 
 sub size {
     my $self = shift;
-    
-    my @extents = $self->bounding_box;
-    return map $extents[$_][MAX] - $extents[$_][MIN], (X,Y,Z);
+    return Slic3r::Geometry::size_3D($self->vertices);
 }
 
 sub slice_facet {

@@ -6,7 +6,7 @@ use warnings;
 
 use Boost::Geometry::Utils;
 use Math::Geometry::Voronoi;
-use Slic3r::Geometry qw(X Y A B point_in_polygon same_line);
+use Slic3r::Geometry qw(X Y A B point_in_polygon same_line line_length);
 use Slic3r::Geometry::Clipper qw(union_ex JT_MITER);
 
 # the constructor accepts an array of polygons 
@@ -61,13 +61,12 @@ sub boost_polygon {
 
 sub offset {
     my $self = shift;
-    my ($distance, $scale, $joinType, $miterLimit) = @_;
-    $scale      ||= &Slic3r::SCALING_FACTOR * 1000000;
-    $joinType   = JT_MITER if !defined $joinType;
-    $miterLimit ||= 2;
-    
-    my $offsets = Math::Clipper::offset($self, $distance, $scale, $joinType, $miterLimit);
-    return @$offsets;
+    return Slic3r::Geometry::Clipper::offset($self, @_);
+}
+
+sub offset_ex {
+    my $self = shift;
+    return Slic3r::Geometry::Clipper::offset_ex($self, @_);
 }
 
 sub safety_offset {
@@ -83,12 +82,11 @@ sub safety_offset {
     );
 }
 
-sub offset_ex {
+sub noncollapsing_offset_ex {
     my $self = shift;
-    my @offsets = $self->offset(@_);
+    my ($distance, @params) = @_;
     
-    # apply holes to the right contours
-    return @{ union_ex(\@offsets) };
+    return $self->offset_ex($distance + 1, @params);
 }
 
 sub encloses_point {
@@ -110,10 +108,14 @@ sub encloses_point_quick {
 
 sub encloses_line {
     my $self = shift;
-    my ($line) = @_;
-    
+    my ($line, $tolerance) = @_;
     my $clip = $self->clip_line($line);
-    return @$clip == 1 && same_line($clip->[0], $line);
+    if (!defined $tolerance) {
+        # optimization
+        return @$clip == 1 && same_line($clip->[0], $line);
+    } else {
+        return @$clip == 1 && abs(line_length($clip->[0]) - $line->length) < $tolerance;
+    }
 }
 
 sub point_on_segment {
@@ -140,6 +142,11 @@ sub bounding_box_polygon {
         [ $bb[2], $bb[3] ],
         [ $bb[0], $bb[3] ],
     ]);
+}
+
+sub bounding_box_center {
+    my $self = shift;
+    return Slic3r::Geometry::bounding_box_center($self->contour);
 }
 
 sub clip_line {

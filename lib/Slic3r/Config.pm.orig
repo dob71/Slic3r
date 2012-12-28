@@ -3,11 +3,15 @@ use strict;
 use warnings;
 use utf8;
 
+<<<<<<< HEAD
 use File::Basename;
 use File::HomeDir;
 use Wx qw();
-use List::Util qw(first);
 
+use constant PI => 4 * atan2(1, 1);
+=======
+use List::Util qw(first);
+>>>>>>> 452b62e53d449ebfca00922f7cc3319f291f0afb
 
 # cemetery of old config settings
 our @Ignore = qw(duplicate_x duplicate_y multiply_x multiply_y support_material_tool);

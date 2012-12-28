@@ -9,8 +9,8 @@ A: Yes.
 Slic3r is a G-code generator for 3D printers. It's compatible with RepRaps,
 Makerbots, Ultimakers and many more machines.
 
-See the [project homepage](http://slic3r.org/) at slic3r.org
-for more information.
+See the [project homepage](http://slic3r.org/) at slic3r.org and the
+[documentation](https://github.com/alexrj/Slic3r/wiki/Documentation) on the Slic3r wiki for more information.
 
 ## What language is it written in?
 
@@ -87,10 +87,9 @@ The author of the Silk icon set is Mark James.
         --save <file>       Save configuration to the specified file
         --load <file>       Load configuration from the specified file. It can be used 
                             more than once to load options from multiple files.
-        -o, --output <file> File or directory to output gcode to (by default, the file will be
-                            saved into the same directory as the input file using the
+        -o, --output <file> File to output gcode to (by default, the file will be saved
+                            into the same directory as the input file using the 
                             --output-filename-format to generate the filename)
-        -j, --threads <num> Number of threads to use (1+, default: 2)
     
       Output options:
         --output-filename-format
@@ -127,7 +126,7 @@ The author of the Silk icon set is Mark James.
         --temperature       Extrusion temperature in degree Celsius, set 0 to disable (default: 200)
         --first-layer-temperature Extrusion temperature for the first layer, in degree Celsius,
                             set 0 to disable (default: same as --temperature)
-        --bed-temperature   Heated bed temperature in degree Celsius, set 0 to disable (default: 200)
+        --bed-temperature   Heated bed temperature in degree Celsius, set 0 to disable (default: 0)
         --first-layer-bed-temperature Heated bed temperature for the first layer, in degree Celsius,
                             set 0 to disable (default: same as --bed-temperature)
         
@@ -145,7 +144,10 @@ The author of the Silk icon set is Mark James.
                             (default: 60)
         --top-solid-infill-speed Speed of print moves for top surfaces in mm/s or % over solid infill speed
                             (default: 50)
+        --support-material-speed
+                            Speed of support material print moves in mm/s (default: 60)
         --bridge-speed      Speed of bridge print moves in mm/s (default: 60)
+        --gap-fill-speed    Speed of gap fill print moves in mm/s (default: 20)
         --first-layer-speed Speed of print moves for bottom layer, expressed either as an absolute
                             value or as a percentage over normal speeds (default: 30%)
         
@@ -154,11 +156,14 @@ The author of the Silk icon set is Mark James.
         --first-layer-height Layer height for first layer (mm or %, default: 100%)
         --infill-every-layers
                             Infill every N layers (default: 1)
-      
+        --solid-infill-every-layers
+                            Force a solid layer every N layers (default: 0)
+    
       Print options:
         --perimeters        Number of perimeters/horizontal skins (range: 0+, default: 3)
-        --solid-layers      Number of solid layers to do for top/bottom surfaces
-                            (range: 1+, default: 3)
+        --top-solid-layers  Number of solid layers to do for top surfaces (range: 0+, default: 3)
+        --bottom-solid-layers  Number of solid layers to do for bottom surfaces (range: 0+, default: 3)
+        --solid-layers      Shortcut for setting the two options above at once
         --fill-density      Infill density (range: 0-1, default: 0.4)
         --fill-angle        Infill angle in degrees (range: 0-90, default: 45)
         --fill-pattern      Pattern to use to fill non-solid layers (default: rectilinear)
@@ -171,6 +176,12 @@ The author of the Silk icon set is Mark James.
         --layer-gcode       Load layer-change G-code from the supplied file (default: nothing).
         --extra-perimeters  Add more perimeters when needed (default: yes)
         --randomize-start   Randomize starting point across layers (default: yes)
+        --only-retract-when-crossing-perimeters
+                            Disable retraction when travelling between infill paths inside the same island.
+                            (default: no)
+        --solid-infill-below-area
+                            Force solid infill when a region has a smaller area than this threshold
+                            (mm^2, default: 70)
       
        Support material options:
         --support-material  Generate support material for overhangs
@@ -184,8 +195,7 @@ The author of the Silk icon set is Mark James.
                             Support material angle in degrees (range: 0-90, default: 0)
       
        Retraction options:
-        --retract-length    Length of retraction in mm when pausing extrusion 
-                            (default: 1)
+        --retract-length    Length of retraction in mm when pausing extrusion (default: 1)
         --retract-speed     Speed for retraction in mm/s (default: 30)
         --retract-restart-extra
                             Additional amount of filament in mm to push after
@@ -193,6 +203,13 @@ The author of the Silk icon set is Mark James.
         --retract-before-travel
                             Only retract before travel moves of this length in mm (default: 2)
         --retract-lift      Lift Z by the given distance in mm when retracting (default: 0)
+        
+       Retraction options for multi-extruder setups:
+        --retract-length-toolchange
+                            Length of retraction in mm when disabling tool (default: 1)
+        --retract-restart-extra-toolchnage
+                            Additional amount of filament in mm to push after
+                            switching tool (default: 0)
        
        Cooling options:
         --cooling           Enable fan and cooling control
@@ -213,6 +230,8 @@ The author of the Silk icon set is Mark James.
         --skirt-distance    Distance in mm between innermost skirt and object 
                             (default: 6)
         --skirt-height      Height of skirts to draw (expressed in layers, 0+, default: 1)
+        --min-skirt-length  Generate no less than the number of loops required to consume this length
+                            of filament on the first layer, for each extruder (mm, 0+, default: 0)
         --brim-width        Width of the brim that will get added to each object to help adhesion
                             (mm, default: 0)
        
@@ -256,8 +275,6 @@ The author of the Silk icon set is Mark James.
         --infill-extruder   Extruder to use for infill (1+, default: 1)
         --support-material-extruder
                             Extruder to use for support material (1+, default: 1)
-            
-
 
 If you want to change a preset file, just do
 
@@ -266,38 +283,3 @@ If you want to change a preset file, just do
 If you want to slice a file overriding an option contained in your preset file:
 
     slic3r.pl --load config.ini --layer-height 0.25 file.stl
-
-## How can I integrate Slic3r with Pronterface?
-
-Put this into *slicecommand*:
-
-    slic3r.pl $s --load config.ini --output $o
-
-And this into *sliceoptscommand*:
-
-    slic3r.pl --load config.ini --ignore-nonexistent-config
-
-Replace `slic3r.pl` with the full path to the slic3r executable and `config.ini`
-with the full path of your config file (put it in your home directory or where
-you like).
-On Mac, the executable has a path like this:
-
-    /Applications/Slic3r.app/Contents/MacOS/slic3r
-
-## How can I specify a custom filename format for output G-code files?
-
-You can specify a filename format by using any of the config options. 
-Just enclose them in square brackets, and Slic3r will replace them upon
-exporting.
-The additional `[input_filename]` and `[input_filename_base]` options will
-be replaced by the input file name (in the second case, the .stl extension 
-is stripped).
-
-The default format is `[input_filename_base].gcode`, meaning that if you slice
-a *foo.stl* file, the output will be saved to *foo.gcode*.
-
-See below for more complex examples:
-
-    [input_filename_base]_h[layer_height]_p[perimeters]_s[solid_layers].gcode
-    [input_filename]_center[print_center]_[layer_height]layers.gcode
-

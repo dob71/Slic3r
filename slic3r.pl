@@ -27,6 +27,7 @@ my %cli_options = ();
         'save=s'                => \$opt{save},
         'load=s@'               => \$opt{load},
         'ignore-nonexistent-config' => \$opt{ignore_nonexistent_config},
+        'datadir=s'             => \$opt{datadir},
         'export-svg'            => \$opt{export_svg},
         'merge|m'               => \$opt{merge},
     );
@@ -81,6 +82,10 @@ if ($opt{save}) {
 # launch GUI
 my $gui;
 if (!@ARGV && !$opt{save} && eval "require Slic3r::GUI; 1") {
+    {
+        no warnings 'once';
+        $Slic3r::GUI::datadir = $opt{datadir} if $opt{datadir};
+    }
     $gui = Slic3r::GUI->new;
     $gui->{skeinpanel}->load_config_file($_) for @{$opt{load}};
     $gui->{skeinpanel}->load_config($cli_config);
@@ -94,9 +99,9 @@ if (@ARGV) {  # slicing from command line
     
     while (my $input_file = shift @ARGV) {
         my $print = Slic3r::Print->new(config => $config);
-        $print->add_object_from_file($input_file);
+        $print->add_model(Slic3r::Model->read_from_file($input_file));
         if ($opt{merge}) {
-            $print->add_object_from_file($_) for splice @ARGV, 0;
+            $print->add_model(Slic3r::Model->read_from_file($_)) for splice @ARGV, 0;
         }
         $print->duplicate;
         $print->arrange_objects if @{$print->objects} > 1;
@@ -105,7 +110,7 @@ if (@ARGV) {  # slicing from command line
             output_file => $opt{output},
             status_cb   => sub {
                 my ($percent, $message) = @_;
-                printf "=> $message\n";
+                printf "=> %s\n", $message;
             },
         );
         if ($opt{export_svg}) {
@@ -198,7 +203,10 @@ $j
                         (default: $config->{solid_infill_speed})
     --top-solid-infill-speed Speed of print moves for top surfaces in mm/s or % over solid infill speed
                         (default: $config->{top_solid_infill_speed})
+    --support-material-speed
+                        Speed of support material print moves in mm/s (default: $config->{support_material_speed})
     --bridge-speed      Speed of bridge print moves in mm/s (default: $config->{bridge_speed})
+    --gap-fill-speed    Speed of gap fill print moves in mm/s (default: $config->{gap_fill_speed})
     --first-layer-speed Speed of print moves for bottom layer, expressed either as an absolute
                         value or as a percentage over normal speeds (default: $config->{first_layer_speed})
     
@@ -207,11 +215,14 @@ $j
     --first-layer-height Layer height for first layer (mm or %, default: $config->{first_layer_height})
     --infill-every-layers
                         Infill every N layers (default: $config->{infill_every_layers})
+    --solid-infill-every-layers
+                        Force a solid layer every N layers (default: $config->{solid_infill_every_layers})
   
   Print options:
     --perimeters        Number of perimeters/horizontal skins (range: 0+, default: $config->{perimeters})
-    --solid-layers      Number of solid layers to do for top/bottom surfaces
-                        (range: 1+, default: $config->{solid_layers})
+    --top-solid-layers  Number of solid layers to do for top surfaces (range: 0+, default: $config->{top_solid_layers})
+    --bottom-solid-layers  Number of solid layers to do for bottom surfaces (range: 0+, default: $config->{bottom_solid_layers})
+    --solid-layers      Shortcut for setting the two options above at once
     --fill-density      Infill density (range: 0-1, default: $config->{fill_density})
     --fill-angle        Infill angle in degrees (range: 0-90, default: $config->{fill_angle})
     --fill-pattern      Pattern to use to fill non-solid layers (default: $config->{fill_pattern})
@@ -224,6 +235,12 @@ $j
     --layer-gcode       Load layer-change G-code from the supplied file (default: nothing).
     --extra-perimeters  Add more perimeters when needed (default: yes)
     --randomize-start   Randomize starting point across layers (default: yes)
+    --only-retract-when-crossing-perimeters
+                        Disable retraction when travelling between infill paths inside the same island.
+                        (default: no)
+    --solid-infill-below-area
+                        Force solid infill when a region has a smaller area than this threshold
+                        (mm^2, default: $config->{solid_infill_below_area})
   
    Support material options:
     --support-material  Generate support material for overhangs
@@ -237,8 +254,7 @@ $j
                         Support material angle in degrees (range: 0-90, default: $config->{support_material_angle})
   
    Retraction options:
-    --retract-length    Length of retraction in mm when pausing extrusion 
-                        (default: $config->{retract_length}[0])
+    --retract-length    Length of retraction in mm when pausing extrusion (default: $config->{retract_length}[0])
     --retract-speed     Speed for retraction in mm/s (default: $config->{retract_speed}[0])
     --retract-restart-extra
                         Additional amount of filament in mm to push after
@@ -246,6 +262,13 @@ $j
     --retract-before-travel
                         Only retract before travel moves of this length in mm (default: $config->{retract_before_travel}[0])
     --retract-lift      Lift Z by the given distance in mm when retracting (default: $config->{retract_lift}[0])
+    
+   Retraction options for multi-extruder setups:
+    --retract-length-toolchange
+                        Length of retraction in mm when disabling tool (default: $config->{retract_length}[0])
+    --retract-restart-extra-toolchnage
+                        Additional amount of filament in mm to push after
+                        switching tool (default: $config->{retract_restart_extra}[0])
    
    Cooling options:
     --cooling           Enable fan and cooling control
@@ -266,6 +289,8 @@ $j
     --skirt-distance    Distance in mm between innermost skirt and object 
                         (default: $config->{skirt_distance})
     --skirt-height      Height of skirts to draw (expressed in layers, 0+, default: $config->{skirt_height})
+    --min-skirt-length  Generate no less than the number of loops required to consume this length
+                        of filament on the first layer, for each extruder (mm, 0+, default: $config->{min_skirt_length})
     --brim-width        Width of the brim that will get added to each object to help adhesion
                         (mm, default: $config->{brim_width})
    

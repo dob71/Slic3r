@@ -51,7 +51,7 @@ sub fill_surface {
     
     if (0) {
         require "Slic3r/SVG.pm";
-        Slic3r::SVG::output(undef, "fill.svg",
+        Slic3r::SVG::output("fill.svg",
             polygons => $expolygon,
             polylines => [map $_->p, @paths],
         );
@@ -60,7 +60,7 @@ sub fill_surface {
     # paths must be rotated back
     $self->rotate_points_back(\@paths, $rotate_vector);
     
-    return {}, @paths;
+    return { flow_spacing => $params{flow_spacing} }, @paths;
 }
 
 1;

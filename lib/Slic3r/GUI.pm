@@ -4,6 +4,9 @@ use warnings;
 use utf8;
 
 use FindBin;
+use File::Basename;
+use File::HomeDir;
+
 use Slic3r::GUI::AboutDialog;
 use Slic3r::GUI::ConfigWizard;
 use Slic3r::GUI::Plater;
@@ -51,9 +54,9 @@ sub OnInit {
     Slic3r::debugf "wxWidgets version %s, Wx version %s\n", &Wx::wxVERSION_STRING, $Wx::VERSION;
     
     $self->{notifier} = Slic3r::GUI::Notifier->new;
-    
+
     # locate or create data directory
-    $datadir ||= Wx::StandardPaths::Get->GetUserDataDir;
+    $datadir ||= Slic3r::Config->GetConfigDir();
     Slic3r::debugf "Data directory: %s\n", $datadir;
     my $run_wizard = (-d $datadir) ? 0 : 1;
     for ($datadir, "$datadir/print", "$datadir/filament", "$datadir/printer") {
@@ -66,7 +69,7 @@ sub OnInit {
         my $ini = eval { Slic3r::Config->read_ini("$datadir/slic3r.ini") };
         $Settings = $ini if $ini;
     }
-    
+
     # application frame
     Wx::Image::AddHandler(Wx::PNGHandler->new);
     my $frame = Wx::Frame->new(undef, -1, 'Slic3r', wxDefaultPosition, [760, 470], wxDEFAULT_FRAME_STYLE);

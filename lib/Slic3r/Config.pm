@@ -3,7 +3,11 @@ use strict;
 use warnings;
 use utf8;
 
+use File::Basename;
+use File::HomeDir;
+use Wx qw();
 use List::Util qw(first);
+
 
 # cemetery of old config settings
 our @Ignore = qw(duplicate_x duplicate_y multiply_x multiply_y support_material_tool);
@@ -1273,6 +1277,27 @@ sub read_ini {
     close $fh;
     
     return $ini;
+}
+
+sub GetConfigDir {
+    # If we are not included into the X2SW bundle, use standard path
+    my $slic3rpath = dirname($FindBin::Bin =~ s/\/bin$//);
+    my $x2sw_bundle_prof_path = dirname($FindBin::Bin) . '/.x2sw';
+    Slic3r::debugf "Looking for $x2sw_bundle_prof_path\n";
+    if(! -e $x2sw_bundle_prof_path) { 
+        Slic3r::debugf "Using standard config path\n";
+        return Wx::StandardPaths::Get->GetUserDataDir;
+    }
+    # See if we should use user home folder
+    my $x2sw_cfg_path = File::HomeDir->my_home . '/.x2sw';
+    if(! -e  ($x2sw_cfg_path . '/.use_local')) {
+        Slic3r::debugf "Using user home x2sw profiles path: $x2sw_cfg_path\n";
+        mkdir $x2sw_cfg_path;
+        return $x2sw_cfg_path . '/Slic3r';
+    }
+    # Use the local .x2sw folder
+    Slic3r::debugf "Using the local install x2sw profiles path: $x2sw_cfg_path\n";
+    return $x2sw_bundle_prof_path . '/Slic3r';
 }
 
 1;

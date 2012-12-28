@@ -652,6 +652,11 @@ sub build {
             no_labels => 1,
             options => [qw(layer_gcode)],
         },
+        {
+            title => 'Extruder set G-code',
+            no_labels => 1,
+            options => [qw(extruder_set_gcode)],
+        },
     ]);
     
     $self->{extruder_pages} = [];

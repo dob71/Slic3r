@@ -151,13 +151,15 @@ sub extrude_path {
             # build a more complete configuration space
             $travel->translate(-$self->shift_x, -$self->shift_y);
             if (!$Slic3r::Config->only_retract_when_crossing_perimeters || $path->role != EXTR_ROLE_FILL || !first { $_->encloses_line($travel, scaled_epsilon) } @{$self->layer->slices}) {
-                if ($self->last_path && $self->last_path->role == &EXTR_ROLE_EXTERNAL_PERIMETER) {
+                # The feature making a slight move inward when done with external perimeter fails to work consistently, trying to fix, 
+                # but disabling for X2 alltogether since not sure how helpful it is, but know for sure it might cause troubles.
+                if ($Slic3r::Config->gcode_flavor !~ /^x2/ && $self->last_path && $self->last_path->role == &EXTR_ROLE_EXTERNAL_PERIMETER) {
                     my @lines = $self->last_path->lines;
                     my $last_line = $lines[-1];
                     if (points_coincide($last_line->[B], $self->last_pos)) {
                         my $point = Slic3r::Geometry::point_along_segment(@$last_line, $last_line->length + scale $path->flow_spacing);
                         bless $point, 'Slic3r::Point';
-                        $point->rotate(PI/6, $last_line->[B]);
+                        $point->rotate(PI*3/4, $last_line->[B]);
                         $self->speed('travel');
                         $gcode .= $self->G0($point, undef, 0, "move inwards before travel");
                     }
@@ -434,8 +436,12 @@ sub set_extruder {
     
     # set the new extruder
     $self->extruder($extruder);
-    $gcode .= sprintf "T%d%s\n", $extruder->id, ($Slic3r::Config->gcode_comments ? ' ; change extruder' : '');
-    $gcode .= $self->reset_e;
+    my $ech_gcode = sprintf "%s\n", $Slic3r::Config->replace_options($Slic3r::Config->extruder_set_gcode, {'extruder' => $extruder->id});
+    $gcode .= $ech_gcode;
+    # Reset E only if custom extruder set G-code doesn't do it itself
+    if( $ech_gcode !~ /[^\n]\s*G92\s+E/i ) {
+        $gcode .= $self->reset_e;
+    }
     
     return $gcode;
 }

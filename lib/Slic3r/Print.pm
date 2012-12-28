@@ -701,9 +701,13 @@ sub write_gcode {
     }
     print  $fh "G90 ; use absolute coordinates\n";
     print  $fh "G21 ; set units to millimeters\n";
-    if ($Slic3r::Config->gcode_flavor =~ /^(?:reprap|teacup)$/) {
-        printf $fh $gcodegen->reset_e;
-        if ($Slic3r::Config->gcode_flavor =~ /^(?:reprap|makerbot)$/) {
+    if ($Slic3r::Config->gcode_flavor =~ /^(?:reprap|x2|teacup)$/) {
+        # Do not reset E if custom G-code does that (allows for the flexibility of retracting 
+        # the filament in the custom G-code and unretracting oly when extrusion starts).
+        if ($Slic3r::Config->gcode_flavor =~ /^x2/ && $Slic3r::Config->start_gcode !~ /[^\n]\s*G92\s+E/i) {
+            printf $fh $gcodegen->reset_e;
+        }
+        if ($Slic3r::Config->gcode_flavor =~ /^(?:reprap|x2|makerbot)$/) {
             if ($Slic3r::Config->use_relative_e_distances) {
                 print $fh "M83 ; use relative distances for extrusion\n";
             } else {

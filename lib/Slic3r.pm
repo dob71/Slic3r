@@ -7,7 +7,7 @@ use strict;
 use warnings;
 require v5.10;
 
-our $VERSION = "0.9.7";
+our $VERSION = "0.9.7 mod X2";
 
 our $debug = 0;
 sub debugf {
@@ -21,8 +21,8 @@ BEGIN {
     $have_threads = $Config{useithreads} && eval "use threads; use Thread::Queue; 1";
 }
 
-warn "Running Slic3r under Perl >= 5.16 is not supported nor recommended\n"
-    if $^V >= v5.16;
+#warn "Running Slic3r under Perl > 5.16 is not supported nor recommended\n"
+#    if $^V > v5.16;
 
 use FindBin;
 our $var = "$FindBin::Bin/var";

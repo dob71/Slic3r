@@ -3,8 +3,10 @@ use Moo;
 
 use Slic3r::Geometry qw(PI scale);
 
-has 'nozzle_diameter'   => (is => 'ro', required => 1);
-has 'layer_height'      => (is => 'ro', default => sub { $Slic3r::Config->layer_height });
+has 'nozzle_diameter'           => (is => 'ro', required => 1);
+has 'bridge_flow_ratio'         => (is => 'ro', default => sub { $Slic3r::Config->bridge_flow_ratio->[0] });
+has 'bridge_spacing_multiplier' => (is => 'ro', default => sub { $Slic3r::Config->bridge_spacing_multiplier->[0] });
+has 'layer_height'              => (is => 'ro', default => sub { $Slic3r::Config->layer_height });
 
 has 'width'             => (is => 'rwp', builder => 1);
 has 'spacing'           => (is => 'lazy');
@@ -71,13 +73,13 @@ sub clone {
 
 sub _build_bridge_width {
     my $self = shift;
-    return sqrt($Slic3r::Config->bridge_flow_ratio * ($self->nozzle_diameter**2));
+    return sqrt($self->bridge_flow_ratio * ($self->nozzle_diameter**2));
 }
 
 sub _build_bridge_spacing {
     my $self = shift;
-    my $width = $self->bridge_width;
-    return $width + &Slic3r::OVERLAP_FACTOR * ($width * PI / 4 - $width);
+    my $width = $self->bridge_width * (1 + &Slic3r::OVERLAP_FACTOR * (PI/4 - 1));
+    return $width * $self->bridge_spacing_multiplier;
 }
 
 sub _build_scaled_width {

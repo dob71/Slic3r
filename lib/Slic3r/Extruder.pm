@@ -7,7 +7,8 @@ use constant OPTIONS => [qw(
     extruder_offset
     nozzle_diameter filament_diameter extrusion_multiplier temperature first_layer_temperature
     retract_length retract_lift retract_speed retract_restart_extra retract_before_travel
-    retract_length_toolchange retract_restart_extra_toolchange
+    retract_length_toolchange retract_restart_extra_toolchange bridge_flow_ratio 
+    bridge_spacing_multiplier
 )];
 
 has 'id'    => (is => 'rw', required => 1);
@@ -30,7 +31,10 @@ sub _build_retract_speed_mm_min {
 
 sub make_flow {
     my $self = shift;
-    return Slic3r::Flow->new(nozzle_diameter => $self->nozzle_diameter, @_);
+    return Slic3r::Flow->new(nozzle_diameter => $self->nozzle_diameter, 
+                             bridge_flow_ratio => $self->bridge_flow_ratio, 
+                             bridge_spacing_multiplier => $self->bridge_spacing_multiplier, 
+                             @_);
 }
 
 sub mm3_per_mm {

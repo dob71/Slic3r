@@ -46,13 +46,14 @@ my $cli_config = Slic3r::Config->new_from_cli(%cli_options);
 # load configuration files
 my @external_configs = ();
 my @filament_presets = ();
-my $filament_config;
+my $filament_config = {};
 
 my $guiIniPath = Slic3r::Config->GetConfigDir();
 if (-f "$guiIniPath/slic3r.ini") {
     my $ini = eval { Slic3r::Config->read_ini("$guiIniPath/slic3r.ini") };
     my $presets = $ini->{presets} if $ini;
     foreach my $preset (keys %{$presets}) {
+        next unless length($presets->{$preset}) > 0;
         if ($preset =~ /^filament$/) {
              $filament_config = Slic3r::Config->load("$guiIniPath/$preset/$presets->{$preset}");
              next;
@@ -342,7 +343,7 @@ $j
                         Set a different extrusion width for infill
     --support-material-extrusion-width
                         Set a different extrusion width for support material
-    --bridge-flow-ratio Multiplier for extrusion when bridging (> 0, default: $config->{bridge_flow_ratio})
+    --bridge-flow-ratio Multiplier for extrusion when bridging (> 0, default: $config->{bridge_flow_ratio}->[0])
   
    Multiple extruder options:
     --extruder-offset   Offset of each extruder, if firmware doesn't handle the displacement

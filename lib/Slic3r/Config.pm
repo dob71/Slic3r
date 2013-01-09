@@ -426,9 +426,20 @@ our $Options = {
     'bridge_flow_ratio' => {
         label   => 'Bridge flow ratio',
         tooltip => 'This factor affects the amount of plastic for bridging. You can decrease it slightly to pull the extrudates and prevent sagging, although default settings are usually good and you should experiment with cooling (use a fan) before tweaking this.',
-        cli     => 'bridge-flow-ratio=f',
+        cli     => 'bridge-flow-ratio=f@',
         type    => 'f',
-        default => 1,
+        serialize   => $serialize_comma,
+        deserialize => $deserialize_comma,
+        default => [1],
+    },
+    'bridge_spacing_multiplier' => {
+        label   => 'Bridge spacing multiplier',
+        tooltip => 'This multiplier affects the spacing as the filament is laid out while printing bridges. You can increase it sligtly if nozzle drags the plastic.',
+        cli     => 'bridge-spacing-multiplier=f@',
+        type    => 'f',
+        serialize   => $serialize_comma,
+        deserialize => $deserialize_comma,
+        default => [1],
     },
     'vibration_limit' => {
         label   => 'Vibration limit',
@@ -1187,7 +1198,11 @@ sub validate {
     
     # --bridge-flow-ratio
     die "Invalid value for --bridge-flow-ratio\n"
-        if $self->bridge_flow_ratio <= 0;
+        if grep $_ <= 0, @{$self->bridge_flow_ratio};
+    
+    # --bridge-spacing-multiplier
+    die "Invalid value for --bridge-spacing-multiplier\n"
+        if grep (($_ < 0.5 || $_ > 2.0), @{$self->bridge_spacing_multiplier});
     
     # extruder clearance
     die "Invalid value for --extruder-clearance-radius\n"
@@ -1267,7 +1282,7 @@ sub write_ini {
 sub read_ini {
     my $class = shift;
     my ($file) = @_;
-    
+ 
     local $/ = "\n";
     open my $fh, '<', $file;
     binmode $fh, ':utf8';

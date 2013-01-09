@@ -494,10 +494,6 @@ sub build {
             label_width => 180,
             options => [qw(extrusion_width first_layer_extrusion_width perimeter_extrusion_width infill_extrusion_width support_material_extrusion_width)],
         },
-        {
-            title => 'Flow',
-            options => [qw(bridge_flow_ratio)],
-        },
         $Slic3r::have_threads ? {
             title => 'Other',
             options => [qw(threads)],
@@ -520,6 +516,10 @@ sub build {
         {
             title => 'Filament',
             options => ['filament_diameter#0', 'extrusion_multiplier#0'],
+        },
+        {
+            title => 'Flow',
+            options => ['bridge_flow_ratio#0', 'bridge_spacing_multiplier#0'],
         },
         {
             title => 'Temperature (°C)',

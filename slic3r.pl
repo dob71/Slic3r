@@ -207,6 +207,10 @@ $j
     --bed-temperature   Heated bed temperature in degree Celsius, set 0 to disable (default: $config->{bed_temperature})
     --first-layer-bed-temperature Heated bed temperature for the first layer, in degree Celsius,
                         set 0 to disable (default: same as --bed-temperature)
+    --bridge-spacing-multiplier
+                        Multiplier affecting the spacing as the filament is laid out while printing 
+                        bridges (>= 0.5, <=2, default: $config->{bridge_spacing_multiplier}->[0])
+    --bridge-flow-ratio Multiplier for extrusion when bridging (> 0, default: $config->{bridge_flow_ratio}->[0])
     
   Speed options:
     --travel-speed      Speed of non-print moves in mm/s (default: $config->{travel_speed})
@@ -343,8 +347,7 @@ $j
                         Set a different extrusion width for infill
     --support-material-extrusion-width
                         Set a different extrusion width for support material
-    --bridge-flow-ratio Multiplier for extrusion when bridging (> 0, default: $config->{bridge_flow_ratio}->[0])
-  
+ 
    Multiple extruder options:
     --extruder-offset   Offset of each extruder, if firmware doesn't handle the displacement
                         (can be specified multiple times, default: 0x0)

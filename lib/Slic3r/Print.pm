@@ -694,13 +694,17 @@ sub write_gcode {
         }
     };
     $print_first_layer_temperature->();
-    printf $fh "%s\n", $Slic3r::Config->replace_options($Slic3r::Config->start_gcode);
+    my $start_gcode = $Slic3r::Config->replace_options($Slic3r::Config->start_gcode) . "\n";
+    $start_gcode =~ s/;[^\n]*//g unless $Slic3r::Config->gcode_comments;
+    printf $fh $start_gcode;
+
     for my $t (grep $self->extruders->[$_], 0 .. $#{$Slic3r::Config->first_layer_temperature}) {
         printf $fh $gcodegen->set_temperature($self->extruders->[$t]->first_layer_temperature, 1, $t)
             if $self->extruders->[$t]->first_layer_temperature && $Slic3r::Config->start_gcode !~ /M109/i;
     }
-    print  $fh "G90 ; use absolute coordinates\n";
-    print  $fh "G21 ; set units to millimeters\n";
+
+    print  $fh "G90\n"; # use absolute coordinates
+    print  $fh "G21\n"; # set units to millimeters
     if ($Slic3r::Config->gcode_flavor =~ /^(?:reprap|x2|teacup)$/) {
         # Do not reset E if custom G-code does that (allows for the flexibility of retracting 
         # the filament in the custom G-code and unretracting oly when extrusion starts).
@@ -709,9 +713,9 @@ sub write_gcode {
         }
         if ($Slic3r::Config->gcode_flavor =~ /^(?:reprap|x2|makerbot)$/) {
             if ($Slic3r::Config->use_relative_e_distances) {
-                print $fh "M83 ; use relative distances for extrusion\n";
+                print $fh "M83\n"; # use relative distances for extrusion
             } else {
-                print $fh "M82 ; use absolute distances for extrusion\n";
+                print $fh "M82\n"; # use absolute distances for extrusion
             }
         }
     }
@@ -742,9 +746,12 @@ sub write_gcode {
         # set new layer, but don't move Z as support material interfaces may need an intermediate one
         $gcodegen->layer($self->objects->[$object_copies->[0][0]]->layers->[$layer_id]);
         $gcodegen->elapsed_time(0);
-        $gcode .= $Slic3r::Config->replace_options($Slic3r::Config->layer_gcode) . "\n"
-            if $Slic3r::Config->layer_gcode;
-        
+        if ($Slic3r::Config->layer_gcode) {
+            my $layer_gcode = $Slic3r::Config->replace_options($Slic3r::Config->layer_gcode) . "\n";
+            $layer_gcode =~ s/;[^\n]*//g unless $Slic3r::Config->gcode_comments;
+            $gcode .= $layer_gcode;
+        }
+
         # extrude skirt
         if ($skirt_done < $Slic3r::Config->skirt_height) {
             $gcodegen->set_shift(@shift);
@@ -915,7 +922,9 @@ sub write_gcode {
     print $fh $gcodegen->retract;
     print $fh $gcodegen->set_fan(0);
     print $fh "M501 ; reset acceleration\n" if $Slic3r::Config->acceleration;
-    printf $fh "%s\n", $Slic3r::Config->replace_options($Slic3r::Config->end_gcode);
+    my $end_gcode = $Slic3r::Config->replace_options($Slic3r::Config->end_gcode) . "\n";
+    $end_gcode =~ s/;[^\n]*//g unless $Slic3r::Config->gcode_comments;
+    printf $fh $end_gcode;
     
     printf $fh "; filament used = %.1fmm (%.1fcm3)\n",
         $self->total_extrusion_length, $self->total_extrusion_volume;

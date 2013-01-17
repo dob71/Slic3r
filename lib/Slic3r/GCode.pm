@@ -436,7 +436,8 @@ sub set_extruder {
     
     # set the new extruder
     $self->extruder($extruder);
-    my $ech_gcode = sprintf "%s\n", $Slic3r::Config->replace_options($Slic3r::Config->extruder_set_gcode, {'extruder' => $extruder->id});
+    my $ech_gcode = $Slic3r::Config->replace_options($Slic3r::Config->extruder_set_gcode, {'extruder' => $extruder->id}) . "\n";
+    $ech_gcode =~ s/;[^\n]*//g unless $Slic3r::Config->gcode_comments;
     $gcode .= $ech_gcode;
     # Reset E only if custom extruder set G-code doesn't do it itself
     if( $ech_gcode !~ /[^\n]\s*G92\s+E/i ) {

@@ -709,6 +709,7 @@ sub skirt_flow {
         nozzle_diameter     => $self->config->get_at('nozzle_diameter', $self->objects->[0]->config->support_material_extruder-1),
         layer_height        => $self->skirt_first_layer_height,
         bridge_flow_ratio   => 0,
+        bridge_spacing_multiplier => 0,
     );
 }
 

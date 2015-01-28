@@ -485,6 +485,7 @@ sub unretract {
     my $gcode = "";
     $gcode .= $self->writer->unlift;
     $gcode .= $self->writer->unretract('compensate retraction');
+
     return $gcode;
 }
 
@@ -512,12 +513,18 @@ sub set_extruder {
     # prepend retraction on the current extruder
     my $gcode = $self->retract(1);
     
-    # append custom toolchange G-code
+    # prepare custom toolchange G-code
+    my $tc_gcode = "";
     if (defined $self->writer->extruder && $self->config->toolchange_gcode) {
-        $gcode .= sprintf "%s\n", $self->placeholder_parser->process($self->config->toolchange_gcode, {
+        $tc_gcode = sprintf "%s\n", $self->placeholder_parser->process($self->config->toolchange_gcode, {
             previous_extruder   => $self->writer->extruder->id,
             next_extruder       => $extruder_id,
         });
+    }
+    
+    # insert here for non-X2/X2V3 printers
+    if (!($self->config->gcode_flavor eq 'x2')) {
+        $gcode .= $tc_gcode;
     }
     
     # if ooze prevention is enabled, park current extruder in the nearest
@@ -526,7 +533,12 @@ sub set_extruder {
         if $self->ooze_prevention && defined $self->writer->extruder;
     
     # append the toolchange command
-    $gcode .= $self->writer->toolchange($extruder_id);
+    # For X2/X2V3 the custom code has to be used for the tool change if available
+    if ($self->config->gcode_flavor eq 'x2' && length($tc_gcode) > 0) {
+        $gcode .= $tc_gcode;
+    } else {
+        $gcode .= $self->writer->toolchange($extruder_id);
+    }
     
     # set the new extruder to the operating temperature
     $gcode .= $self->ooze_prevention->post_toolchange($self)

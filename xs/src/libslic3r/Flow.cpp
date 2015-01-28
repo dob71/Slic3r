@@ -6,7 +6,7 @@ namespace Slic3r {
 /* This constructor builds a Flow object from an extrusion width config setting
    and other context properties. */
 Flow
-Flow::new_from_config_width(FlowRole role, const ConfigOptionFloatOrPercent &width, float nozzle_diameter, float height, float bridge_flow_ratio) {
+Flow::new_from_config_width(FlowRole role, const ConfigOptionFloatOrPercent &width, float nozzle_diameter, float height, float bridge_flow_ratio, float bridge_spacing_multiplier) {
     // we need layer height unless it's a bridge
     if (height <= 0 && bridge_flow_ratio == 0) CONFESS("Invalid flow height supplied to new_from_config_width()");
     
@@ -22,17 +22,19 @@ Flow::new_from_config_width(FlowRole role, const ConfigOptionFloatOrPercent &wid
         w = width.get_abs_value(height);
     }
     
-    return Flow(w, height, nozzle_diameter, bridge_flow_ratio > 0);
+    return Flow(w, height, nozzle_diameter, bridge_flow_ratio > 0, bridge_spacing_multiplier);
 }
 
 /* This constructor builds a Flow object from a given centerline spacing. */
 Flow
-Flow::new_from_spacing(float spacing, float nozzle_diameter, float height, bool bridge) {
+Flow::new_from_spacing(float spacing, float nozzle_diameter, float height, float bridge_spacing_multiplier) {
+    bool bridge = (bridge_spacing_multiplier > 0.0);
+    
     // we need layer height unless it's a bridge
     if (height <= 0 && !bridge) CONFESS("Invalid flow height supplied to new_from_spacing()");
 
-    float w = Flow::_width_from_spacing(spacing, nozzle_diameter, height, bridge);
-    return Flow(w, height, nozzle_diameter, bridge);
+    float w = Flow::_width_from_spacing(spacing, nozzle_diameter, height, bridge ? bridge_spacing_multiplier : 0);
+    return Flow(w, height, nozzle_diameter, bridge, bridge_spacing_multiplier);
 }
 
 /* This method returns the centerline spacing between two adjacent extrusions 
@@ -40,7 +42,7 @@ Flow::new_from_spacing(float spacing, float nozzle_diameter, float height, bool 
 float
 Flow::spacing() const {
     if (this->bridge) {
-        return this->width + BRIDGE_EXTRA_SPACING;
+        return this->width * this->bridge_spacing_multiplier;
     }
     
     // rectangle with semicircles at the ends
@@ -57,7 +59,8 @@ Flow::spacing(const Flow &other) const {
     assert(this->bridge == other.bridge);
     
     if (this->bridge) {
-        return this->width/2 + other.width/2 + BRIDGE_EXTRA_SPACING;
+        return (this->bridge_spacing_multiplier * this->width/2) + 
+               (other.bridge_spacing_multiplier * other.width/2);
     }
     
     return this->spacing()/2 + other.spacing()/2;
@@ -104,9 +107,9 @@ Flow::_auto_width(FlowRole role, float nozzle_diameter, float height) {
 
 /* This static method returns the extrusion width value corresponding to the supplied centerline spacing. */
 float
-Flow::_width_from_spacing(float spacing, float nozzle_diameter, float height, bool bridge) {
-    if (bridge) {
-        return spacing - BRIDGE_EXTRA_SPACING;
+Flow::_width_from_spacing(float spacing, float nozzle_diameter, float height, float bridge_spacing_multiplier) {
+    if (bridge_spacing_multiplier > 0) {
+        return spacing / bridge_spacing_multiplier;
     }
     
     // rectangle with semicircles at the ends

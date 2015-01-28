@@ -130,8 +130,8 @@ The author of the Silk icon set is Mark James.
                             (default: 100,100)
         --z-offset          Additional height in mm to add to vertical coordinates
                             (+/-, default: 0)
-        --gcode-flavor      The type of G-code to generate (reprap/teacup/makerware/sailfish/mach3/no-extrusion,
-                            default: reprap)
+        --gcode-flavor      The type of G-code to generate (reprap/x2/teacup/makerware/sailfish/
+                            mach3/no-extrusion, default: reprap)
         --use-relative-e-distances Enable this to get relative E values (default: no)
         --use-firmware-retraction  Enable firmware-controlled retraction using G10/G11 (default: no)
         --gcode-arcs        Use G2/G3 commands for native arcs (experimental, not supported
@@ -343,6 +343,8 @@ The author of the Silk icon set is Mark James.
                             Set a different extrusion width for top infill
         --support-material-extrusion-width
                             Set a different extrusion width for support material
+        --bridge-spacing-multiplier 
+                            Multiplier changing spacing between extrusion lines while printing bridges
         --bridge-flow-ratio Multiplier for extrusion when bridging (> 0, default: 1)
     
        Multiple extruder options:

@@ -272,7 +272,7 @@ sub new {
             $presets = Wx::BoxSizer->new(wxVERTICAL);
             my %group_labels = (
                 print       => 'Print settings',
-                filament    => 'Filament',
+                filament    => 'Filament (per extruder)',
                 printer     => 'Printer',
             );
             $self->{preset_choosers} = {};

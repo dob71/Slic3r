@@ -13,6 +13,7 @@ use Test::More tests => 2;
         nozzle_diameter     => 0.5,
         layer_height        => 0.3, 
         bridge_flow_ratio   => 1,
+        bridge_spacing_multiplier => 1.1,
     );
     isa_ok $flow, 'Slic3r::Flow', 'new_from_width';
 }

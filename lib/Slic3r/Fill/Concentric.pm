@@ -29,7 +29,7 @@ sub fill_surface {
             spacing             => unscale($distance),
             nozzle_diameter     => $flow->nozzle_diameter,
             layer_height        => ($params{layer_height} or die "No layer_height supplied to fill_surface()"),
-            bridge              => $flow->bridge,
+            bridge_spacing_multiplier => ($flow->bridge ? $flow->bridge_spacing_multiplier : 0),
         );
     }
     

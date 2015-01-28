@@ -11,6 +11,7 @@ my %prereqs = qw(
     ExtUtils::MakeMaker             6.80
     ExtUtils::ParseXS               3.22
     File::Basename                  0
+    File::HomeDir                   0
     File::Spec                      0
     Getopt::Long                    0
     Math::PlanePath                 53
@@ -109,8 +110,8 @@ EOF
         my $version = $modules{$module};
         my @cmd = ($cpanm, @cpanm_args, "$module~$version");
         if ($module eq 'XML::SAX::ExpatXS' && $^O eq 'MSWin32') {
-            my $mingw = 'C:\dev\CitrusPerl\mingw64';
-            $mingw = 'C:\dev\CitrusPerl\mingw32' if !-d $mingw;
+            my $mingw = 'D:\CitrusPerl\mingw64';
+            $mingw = 'D:\CitrusPerl\mingw32' if !-d $mingw;
             if (!-d $mingw) {
                 print "Could not find the MinGW directory at $mingw; skipping XML::SAX::ExpatXS (only needed for faster parsing of AMF files)\n";
             } else {

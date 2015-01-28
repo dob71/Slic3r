@@ -23,6 +23,8 @@
         %code{% RETVAL = THIS->nozzle_diameter; %};
     bool bridge()
         %code{% RETVAL = THIS->bridge; %};
+    bool bridge_spacing_multiplier()
+        %code{% RETVAL = THIS->bridge_spacing_multiplier; %};
     float spacing();
     float spacing_to(Flow* other)
         %code{% RETVAL = THIS->spacing(*other); %};
@@ -32,29 +34,30 @@
 %{
 
 Flow*
-_new_from_width(CLASS, role, width, nozzle_diameter, height, bridge_flow_ratio)
+_new_from_width(CLASS, role, width, nozzle_diameter, height, bridge_flow_ratio, bridge_spacing_multiplier)
     char*           CLASS;
     FlowRole        role;
     std::string     width;
     float           nozzle_diameter;
     float           height;
     float           bridge_flow_ratio;
+    float           bridge_spacing_multiplier;
     CODE:
         ConfigOptionFloatOrPercent optwidth;
         optwidth.deserialize(width);
-        RETVAL = new Flow(Flow::new_from_config_width(role, optwidth, nozzle_diameter, height, bridge_flow_ratio));
+        RETVAL = new Flow(Flow::new_from_config_width(role, optwidth, nozzle_diameter, height, bridge_flow_ratio, bridge_spacing_multiplier));
     OUTPUT:
         RETVAL
 
 Flow*
-_new_from_spacing(CLASS, spacing, nozzle_diameter, height, bridge)
+_new_from_spacing(CLASS, spacing, nozzle_diameter, height, bridge_spacing_multiplier)
     char*           CLASS;
     float           spacing;
     float           nozzle_diameter;
     float           height;
-    bool            bridge;
+    float           bridge_spacing_multiplier;
     CODE:
-        RETVAL = new Flow(Flow::new_from_spacing(spacing, nozzle_diameter, height, bridge));
+        RETVAL = new Flow(Flow::new_from_spacing(spacing, nozzle_diameter, height, bridge_spacing_multiplier));
     OUTPUT:
         RETVAL
 

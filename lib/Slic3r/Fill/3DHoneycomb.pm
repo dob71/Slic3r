@@ -16,6 +16,7 @@ sub fill_surface {
         height              => $params{flow}->height,
         nozzle_diameter     => $params{flow}->nozzle_diameter,
         bridge              => 1,
+        bridge_spacing_multiplier => $params{flow}->bridge_spacing_multiplier,
     );
     
     my $expolygon = $surface->expolygon;

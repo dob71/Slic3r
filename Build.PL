@@ -22,6 +22,7 @@ my %prereqs = qw(
     Test::More                      0
     Thread::Semaphore               0
     IO::Scalar                      0
+    threads                         1.96
     Time::HiRes                     0
 );
 my %recommends = qw(
@@ -35,7 +36,7 @@ my $xs_only = grep { $_ eq '--xs' }  @ARGV;
 if ($gui) {
     %prereqs = qw(
     Class::Accessor                 0
-    Wx                              0.9918
+    local_packages\Wx-0.9923.tar.gz 0
     );
     %recommends = qw(
     Growl::GNTP                     0.15
@@ -111,6 +112,7 @@ EOF
         if ($module eq 'XML::SAX::ExpatXS' && $^O eq 'MSWin32') {
             my $mingw = 'C:\dev\CitrusPerl\mingw64';
             $mingw = 'C:\dev\CitrusPerl\mingw32' if !-d $mingw;
+            $mingw = 'D:\CitrusPerl\mingw32' if !-d $mingw;
             if (!-d $mingw) {
                 print "Could not find the MinGW directory at $mingw; skipping XML::SAX::ExpatXS (only needed for faster parsing of AMF files)\n";
             } else {

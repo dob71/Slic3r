@@ -45,6 +45,14 @@ PrintConfigDef::build_def() {
     Options["bridge_fan_speed"].min = 0;
     Options["bridge_fan_speed"].max = 100;
 
+    Options["bridge_spacing_multiplier"].type = coFloat;
+    Options["bridge_spacing_multiplier"].label = "Bridge spacing multiplier";
+    Options["bridge_spacing_multiplier"].category = "Advanced";
+    Options["bridge_spacing_multiplier"].tooltip = "This multiplier changes spacing between extrusion lines while printing bridges.";
+    Options["bridge_spacing_multiplier"].cli = "bridge-spacing-multiplier=f";
+    Options["bridge_spacing_multiplier"].min = 0.5;
+    Options["bridge_spacing_multiplier"].max = 2.0;
+
     Options["bridge_flow_ratio"].type = coFloat;
     Options["bridge_flow_ratio"].label = "Bridge flow ratio";
     Options["bridge_flow_ratio"].category = "Advanced";
@@ -368,12 +376,14 @@ PrintConfigDef::build_def() {
     Options["gcode_flavor"].cli = "gcode-flavor=s";
     Options["gcode_flavor"].enum_keys_map = ConfigOptionEnum<GCodeFlavor>::get_enum_values();
     Options["gcode_flavor"].enum_values.push_back("reprap");
+    Options["gcode_flavor"].enum_values.push_back("x2");
     Options["gcode_flavor"].enum_values.push_back("teacup");
     Options["gcode_flavor"].enum_values.push_back("makerware");
     Options["gcode_flavor"].enum_values.push_back("sailfish");
     Options["gcode_flavor"].enum_values.push_back("mach3");
     Options["gcode_flavor"].enum_values.push_back("no-extrusion");
     Options["gcode_flavor"].enum_labels.push_back("RepRap (Marlin/Sprinter/Repetier)");
+    Options["gcode_flavor"].enum_labels.push_back("RepRap X2/X2V3");
     Options["gcode_flavor"].enum_labels.push_back("Teacup");
     Options["gcode_flavor"].enum_labels.push_back("MakerWare (MakerBot)");
     Options["gcode_flavor"].enum_labels.push_back("Sailfish (MakerBot)");
@@ -888,7 +898,7 @@ PrintConfigDef::build_def() {
 
     Options["toolchange_gcode"].type = coString;
     Options["toolchange_gcode"].label = "Tool change G-code";
-    Options["toolchange_gcode"].tooltip = "This custom code is inserted right before every extruder change. Note that you can use placeholder variables for all Slic3r settings as well as [previous_extruder] and [next_extruder].";
+    Options["toolchange_gcode"].tooltip = "Custom code used for extruder change for RepRap X2/X2V3 and inserted before tool change command for others. You can use settings placeholder variables, [previous_extruder] and [next_extruder].";
     Options["toolchange_gcode"].cli = "toolchange-gcode=s";
     Options["toolchange_gcode"].multiline = true;
     Options["toolchange_gcode"].full_width = true;

@@ -57,7 +57,7 @@ class PrintRegion
     PrintRegionConfig config;
 
     Print* print();
-    Flow flow(FlowRole role, double layer_height, bool bridge, bool first_layer, double width, const PrintObject &object) const;
+    Flow flow(FlowRole role, double layer_height, bool bridge, bool first_layer, double width, const PrintObject &object, bool use_bridge_flow) const;
 
     private:
     Print* _print;

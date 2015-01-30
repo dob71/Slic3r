@@ -18,7 +18,7 @@ PrintRegion::print()
 }
 
 Flow
-PrintRegion::flow(FlowRole role, double layer_height, bool bridge, bool first_layer, double width, const PrintObject &object) const
+PrintRegion::flow(FlowRole role, double layer_height, bool bridge, bool first_layer, double width, const PrintObject &object, bool use_bridge_flow) const
 {
     ConfigOptionFloatOrPercent config_width;
     if (width != -1) {
@@ -62,7 +62,9 @@ PrintRegion::flow(FlowRole role, double layer_height, bool bridge, bool first_la
     }
     double nozzle_diameter = this->_print->config.nozzle_diameter.get_at(extruder-1);
     
-    return Flow::new_from_config_width(role, config_width, nozzle_diameter, layer_height, bridge ? (float)this->config.bridge_flow_ratio : 0.0);
+    return Flow::new_from_config_width(role, config_width, nozzle_diameter, layer_height, 
+                                       (bridge || use_bridge_flow) ? (float)this->config.bridge_flow_ratio : 0.0,
+                                       bridge ? (float)this->config.bridge_spacing_multiplier : 1.0);
 }
 
 #ifdef SLIC3RXS

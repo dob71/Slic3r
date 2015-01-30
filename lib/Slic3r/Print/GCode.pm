@@ -82,20 +82,20 @@ sub export {
     for my $region_id (0..$#{$self->print->regions}) {
         my $region = $self->print->regions->[$region_id];
         printf $fh "; external perimeters extrusion width = %.2fmm\n",
-            $region->flow(FLOW_ROLE_EXTERNAL_PERIMETER, $layer_height, 0, 0, -1, $first_object)->width;
+            $region->flow(FLOW_ROLE_EXTERNAL_PERIMETER, $layer_height, 0, 0, -1, $first_object, 0)->width;
         printf $fh "; perimeters extrusion width = %.2fmm\n",
-            $region->flow(FLOW_ROLE_PERIMETER, $layer_height, 0, 0, -1, $first_object)->width;
+            $region->flow(FLOW_ROLE_PERIMETER, $layer_height, 0, 0, -1, $first_object, 0)->width;
         printf $fh "; infill extrusion width = %.2fmm\n",
-            $region->flow(FLOW_ROLE_INFILL, $layer_height, 0, 0, -1, $first_object)->width;
+            $region->flow(FLOW_ROLE_INFILL, $layer_height, 0, 0, -1, $first_object, 0)->width;
         printf $fh "; solid infill extrusion width = %.2fmm\n",
-            $region->flow(FLOW_ROLE_SOLID_INFILL, $layer_height, 0, 0, -1, $first_object)->width;
+            $region->flow(FLOW_ROLE_SOLID_INFILL, $layer_height, 0, 0, -1, $first_object, 0)->width;
         printf $fh "; top infill extrusion width = %.2fmm\n",
-            $region->flow(FLOW_ROLE_TOP_SOLID_INFILL, $layer_height, 0, 0, -1, $first_object)->width;
+            $region->flow(FLOW_ROLE_TOP_SOLID_INFILL, $layer_height, 0, 0, -1, $first_object, 0)->width;
         printf $fh "; support material extrusion width = %.2fmm\n",
             $self->objects->[0]->support_material_flow->width
             if $self->print->has_support_material;
         printf $fh "; first layer extrusion width = %.2fmm\n",
-            $region->flow(FLOW_ROLE_PERIMETER, $layer_height, 0, 1, -1, $self->objects->[0])->width
+            $region->flow(FLOW_ROLE_PERIMETER, $layer_height, 0, 1, -1, $self->objects->[0], 0)->width
             if $region->config->first_layer_extrusion_width;
         print  $fh "\n";
     }

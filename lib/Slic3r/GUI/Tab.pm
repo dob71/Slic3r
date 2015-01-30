@@ -463,7 +463,6 @@ sub build {
         extrusion_width first_layer_extrusion_width perimeter_extrusion_width 
         external_perimeter_extrusion_width infill_extrusion_width solid_infill_extrusion_width 
         top_infill_extrusion_width support_material_extrusion_width
-        bridge_flow_ratio
         xy_size_compensation threads resolution
     ));
     
@@ -484,9 +483,9 @@ sub build {
             my $line = Slic3r::GUI::OptionsGroup::Line->new(
                 label => 'Solid layers',
             );
-            $line->append_option($optgroup->get_option('top_solid_layers'));
-            $line->append_option($optgroup->get_option('bottom_solid_layers'));
             $optgroup->append_line($line);
+            $optgroup->append_single_option_line('top_solid_layers');
+            $optgroup->append_single_option_line('bottom_solid_layers');
         }
         {
             my $optgroup = $page->new_optgroup('Quality (slower slicing)');
@@ -633,10 +632,6 @@ sub build {
             $optgroup->append_single_option_line('support_material_extrusion_width');
         }
         {
-            my $optgroup = $page->new_optgroup('Flow');
-            $optgroup->append_single_option_line('bridge_flow_ratio');
-        }
-        {
             my $optgroup = $page->new_optgroup('Other');
             $optgroup->append_single_option_line('xy_size_compensation');
             $optgroup->append_single_option_line('threads') if $Slic3r::have_threads;
@@ -652,12 +647,12 @@ sub build {
             my $line = Slic3r::GUI::OptionsGroup::Line->new(
                 label => 'Extruder clearance (mm)',
             );
+            $optgroup->append_line($line);
             foreach my $opt_key (qw(extruder_clearance_radius extruder_clearance_height)) {
                 my $option = $optgroup->get_option($opt_key);
-                $option->width(60);
-                $line->append_option($option);
+                $option->full_width(1);
+                $optgroup->append_single_option_line($option);
             }
-            $optgroup->append_line($line);
         }
         {
             my $optgroup = $page->new_optgroup('Output file');
@@ -792,36 +787,55 @@ sub build {
         fan_always_on cooling
         min_fan_speed max_fan_speed bridge_fan_speed disable_fan_first_layers
         fan_below_layer_time slowdown_below_layer_time min_print_speed
+        bridge_flow_ratio bridge_spacing_multiplier
     ));
     
     {
         my $page = $self->add_options_page('Filament', 'spool.png');
         {
-            my $optgroup = $page->new_optgroup('Filament');
+            my $optgroup = $page->new_optgroup('Basic');
             $optgroup->append_single_option_line('filament_diameter', 0);
             $optgroup->append_single_option_line('extrusion_multiplier', 0);
+            {
+                my $line = Slic3r::GUI::OptionsGroup::Line->new(
+                    label => 'Extruder temperature',
+                );
+                $optgroup->append_line($line);
+            }
+            $optgroup->append_single_option_line('first_layer_temperature', 0);
+            $optgroup->append_single_option_line('temperature', 0);
         }
     
         {
-            my $optgroup = $page->new_optgroup('Temperature (°C)');
-        
+            my $optgroup = $page->new_optgroup('Advanced');
             {
                 my $line = Slic3r::GUI::OptionsGroup::Line->new(
-                    label => 'Extruder',
+                    label => 'Bridges',
                 );
-                $line->append_option($optgroup->get_option('first_layer_temperature', 0));
-                $line->append_option($optgroup->get_option('temperature', 0));
                 $optgroup->append_line($line);
             }
-        
+            $optgroup->append_single_option_line('bridge_flow_ratio');
+            $optgroup->append_single_option_line('bridge_spacing_multiplier');
             {
                 my $line = Slic3r::GUI::OptionsGroup::Line->new(
-                    label => 'Bed',
+                    label => 'Bed temperature',
                 );
-                $line->append_option($optgroup->get_option('first_layer_bed_temperature'));
-                $line->append_option($optgroup->get_option('bed_temperature'));
                 $optgroup->append_line($line);
             }
+            $optgroup->append_single_option_line('first_layer_bed_temperature');
+            $optgroup->append_single_option_line('bed_temperature');
+        }
+        {
+            my $optgroup = $page->new_optgroup('Note');
+            my $line = Slic3r::GUI::OptionsGroup::Line->new(
+                label       => '',
+                full_width  => 1,
+                widget      => sub {
+                    my ($parent) = @_;
+                    return $self->{description_line_1} = Slic3r::GUI::OptionsGroup::StaticText->new($parent);
+                },
+            );
+            $optgroup->append_line($line);
         }
     }
     
@@ -849,11 +863,11 @@ sub build {
                 my $line = Slic3r::GUI::OptionsGroup::Line->new(
                     label => 'Fan speed',
                 );
-                $line->append_option($optgroup->get_option('min_fan_speed'));
-                $line->append_option($optgroup->get_option('max_fan_speed'));
                 $optgroup->append_line($line);
             }
             
+            $optgroup->append_single_option_line('min_fan_speed');
+            $optgroup->append_single_option_line('max_fan_speed');
             $optgroup->append_single_option_line('bridge_fan_speed');
             $optgroup->append_single_option_line('disable_fan_first_layers');
         }
@@ -907,6 +921,8 @@ sub _update_description {
         $msg = "Fan $fan_other_layers";
     }
     $self->{description_line}->SetText($msg);
+    my $msg1 = "If printing infill or support on a multiple extruder machine and assigning different filaments to each extruder, only \"Basic\" filament settings are switched when the extruder changes, the advanced settings remain the same throughout the whole print.";
+    $self->{description_line_1}->SetText($msg1);
 }
 
 package Slic3r::GUI::Tab::Printer;

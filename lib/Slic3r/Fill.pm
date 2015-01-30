@@ -202,10 +202,11 @@ sub make_fill {
         my $flow = $layerm->region->flow(
             $role,
             $h,
-            $is_bridge || $f->use_bridge_flow,
+            $is_bridge,
             $layerm->id == 0,
             -1,
             $layerm->object,
+            $f->use_bridge_flow,
         );
         
         # calculate flow spacing for infill pattern generation
@@ -222,6 +223,7 @@ sub make_fill {
                 0,  # no first layer
                 -1, # auto width
                 $layerm->object,
+                0,  # not trying to use bridge flow
             );
             $f->spacing($internal_flow->spacing);
             $using_internal_flow = 1;
@@ -251,7 +253,7 @@ sub make_fill {
                 spacing         => $f->spacing,
                 nozzle_diameter => $flow->nozzle_diameter,
                 layer_height    => $h,
-                bridge          => $is_bridge || $f->use_bridge_flow,
+                bridge_spacing_multiplier => (($is_bridge || $f->use_bridge_flow) ? $flow->bridge_spacing_multiplier : 0.0),
             );
         }
         my $mm3_per_mm = $flow->mm3_per_mm;

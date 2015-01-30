@@ -58,6 +58,38 @@ my %cli_options = ();
 
 # load configuration files
 my @external_configs = ();
+my @filament_presets = ();
+my $filament_config = {};
+
+my $guiIniPath = Slic3r::Config->GetConfigDir();
+if (-f "$guiIniPath/slic3r.ini") {
+    my $ini = eval { Slic3r::Config->read_ini("$guiIniPath/slic3r.ini") };
+    my $presets = $ini->{presets} if $ini;
+    foreach my $preset (keys %{$presets}) {
+        next unless length($presets->{$preset}) > 0;
+        if ($preset =~ /^filament$/) {
+             $filament_config = Slic3r::Config->load("$guiIniPath/$preset/$presets->{$preset}");
+             next;
+        }
+        if ($preset =~ /^filament_(\d+)/) {
+             $filament_presets[$1] = Slic3r::Config->load("$guiIniPath/filament/$presets->{$preset}" . '.ini');
+             # WTF, the above adds 2 elements to the array, have to filter out the undefined one later
+             next;
+        }
+        push @external_configs, 
+             Slic3r::Config->load("$guiIniPath/$preset/$presets->{$preset}");
+    }
+
+    # apply additional filament configs
+    foreach my $fconfig (@filament_presets) {
+        next unless ref $fconfig eq 'Slic3r::Config';
+        foreach my $fopt_key (@{$fconfig->get_keys}) {
+            next unless ref $filament_config->get($fopt_key) eq 'ARRAY';
+            push @{ $filament_config->get($fopt_key) }, $fconfig->get($fopt_key)->[0];
+        }
+    }
+}
+
 if ($opt{load}) {
     foreach my $configfile (@{$opt{load}}) {
         $configfile = Slic3r::decode_path($configfile);
@@ -79,14 +111,14 @@ foreach my $c (@external_configs, Slic3r::Config->new_from_cli(%cli_options)) {
     $cli_config->apply($c);
 }
 
+# merge configuration
+my $config = Slic3r::Config->new_from_defaults;
+$config->apply($_) for @external_configs, $filament_config, $cli_config;
+
 # save configuration
 if ($opt{save}) {
     $cli_config->save($opt{save});
 }
-
-# apply command line config on top of default config
-my $config = Slic3r::Config->new_from_defaults;
-$config->apply($cli_config);
 
 # launch GUI
 my $gui;
@@ -259,7 +291,6 @@ Usage: slic3r.pl [ OPTIONS ] [ file.stl ] [ file2.stl ] ...
     --split             Split the shells contained in given STL file into several STL files
     --info              Output information about the supplied file(s) and exit
     
-$j
   GUI options:
     --no-plater         Disable the plater tab
     --gui-mode          Overrides the configured mode (simple/expert)
@@ -282,7 +313,7 @@ $j
                         (default: 100,100)
     --z-offset          Additional height in mm to add to vertical coordinates
                         (+/-, default: $config->{z_offset})
-    --gcode-flavor      The type of G-code to generate (reprap/teacup/makerware/sailfish/mach3/no-extrusion,
+    --gcode-flavor      The type of G-code to generate (reprap/x2/teacup/makerware/sailfish/mach3/no-extrusion,
                         default: $config->{gcode_flavor})
     --use-relative-e-distances Enable this to get relative E values (default: no)
     --use-firmware-retraction  Enable firmware-controlled retraction using G10/G11 (default: no)
@@ -497,8 +528,10 @@ $j
                         Set a different extrusion width for top infill
     --support-material-extrusion-width
                         Set a different extrusion width for support material
+    --bridge-spacing-multiplier 
+                        Multiplier changing spacing between extrusion lines while printing bridges
     --bridge-flow-ratio Multiplier for extrusion when bridging (> 0, default: $config->{bridge_flow_ratio})
-  
+
    Multiple extruder options:
     --extruder-offset   Offset of each extruder, if firmware doesn't handle the displacement
                         (can be specified multiple times, default: 0x0)

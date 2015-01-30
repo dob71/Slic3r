@@ -36,7 +36,8 @@ LayerRegion::flow(FlowRole role, bool bridge, double width) const
         bridge,
         this->_layer->id() == 0,
         width,
-        *this->_layer->object()
+        *this->_layer->object(),
+        false
     );
 }
 

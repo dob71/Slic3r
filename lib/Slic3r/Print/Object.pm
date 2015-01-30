@@ -544,6 +544,7 @@ sub generate_support_material {
                                 // $self->print->config->nozzle_diameter->[0],
         layer_height        => $self->config->get_abs_value('first_layer_height'),
         bridge_flow_ratio   => 0,
+        bridge_spacing_multiplier => 0,
     );
     
     my $s = Slic3r::Print::SupportMaterial->new(
@@ -1077,6 +1078,7 @@ sub support_material_flow {
         nozzle_diameter     => $self->print->config->nozzle_diameter->[$extruder-1] // $self->print->config->nozzle_diameter->[0],
         layer_height        => $self->config->layer_height,
         bridge_flow_ratio   => 0,
+        bridge_spacing_multiplier => 0,
     );
 }
 

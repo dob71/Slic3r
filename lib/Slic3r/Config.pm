@@ -3,13 +3,18 @@ use strict;
 use warnings;
 use utf8;
 
+use File::Basename;
+use File::HomeDir;
+use Wx qw();
 use List::Util qw(first max);
+
 
 # cemetery of old config settings
 our @Ignore = qw(duplicate_x duplicate_y multiply_x multiply_y support_material_tool acceleration
     adjust_overhang_flow standby_temperature scale rotate duplicate duplicate_grid
     rotate scale duplicate_grid start_perimeters_at_concave_points start_perimeters_at_non_overhang
-    randomize_start seal_position bed_size print_center g0);
+    randomize_start seal_position bed_size print_center g0 
+);
 
 our $Options = print_config_def();
 
@@ -149,6 +154,10 @@ sub _handle_legacy {
         my ($x, $y) = split /,/, $value;
         $value = "0x0,${x}x0,${x}x${y},0x${y}";
     }
+    if ($opt_key eq 'extruder_set_gcode' && $value) {
+        $opt_key = 'toolchange_gcode';
+        $value =~ s/\[extruder\]/\[next_extruder\]/g;
+    }
     return () if first { $_ eq $opt_key } @Ignore;
     
     # For historical reasons, the world's full of configs having these very low values;
@@ -271,6 +280,10 @@ sub validate {
     die "Invalid value for --bridge-flow-ratio\n"
         if $self->bridge_flow_ratio <= 0;
     
+    # --bridge-spacing-multiplier
+    die "Invalid value for --bridge-spacing-multiplier\n"
+        if ($self->bridge_spacing_multiplier < 0.5 || $self->bridge_spacing_multiplier > 2.0);
+    
     # extruder clearance
     die "Invalid value for --extruder-clearance-radius\n"
         if $self->extruder_clearance_radius <= 0;
@@ -378,7 +391,7 @@ sub write_ini {
 sub read_ini {
     my $class = shift;
     my ($file) = @_;
-    
+ 
     local $/ = "\n";
     Slic3r::open(\my $fh, '<', $file)
         or die "Unable to open $file: $!\n";
@@ -401,6 +414,27 @@ sub read_ini {
     close $fh;
     
     return $ini;
+}
+
+sub GetConfigDir {
+    # If we are not included into the X2SW bundle, use standard path
+    my $slic3rpath = dirname($FindBin::Bin =~ s/\/bin$//);
+    my $x2sw_bundle_prof_path = dirname($FindBin::Bin) . '/.x2sw';
+    Slic3r::debugf "Looking for $x2sw_bundle_prof_path\n";
+    if(! -e $x2sw_bundle_prof_path) { 
+        Slic3r::debugf "Using standard config path\n";
+        return Wx::StandardPaths::Get->GetUserDataDir;
+    }
+    # See if we should use user home folder
+    my $x2sw_cfg_path = File::HomeDir->my_home . '/.x2sw';
+    if(! -e  ($x2sw_cfg_path . '/.use_local')) {
+        Slic3r::debugf "Using user home x2sw profiles path: $x2sw_cfg_path\n";
+        mkdir $x2sw_cfg_path;
+        return $x2sw_cfg_path . '/Slic3r';
+    }
+    # Use the local .x2sw folder
+    Slic3r::debugf "Using the local install x2sw profiles path: $x2sw_cfg_path\n";
+    return $x2sw_bundle_prof_path . '/Slic3r';
 }
 
 package Slic3r::Config::GCode;

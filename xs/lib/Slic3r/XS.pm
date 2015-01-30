@@ -129,7 +129,7 @@ sub new_from_width {
     my ($class, %args) = @_;
     
     return $class->_new_from_width(
-        @args{qw(role width nozzle_diameter layer_height bridge_flow_ratio)},
+        @args{qw(role width nozzle_diameter layer_height bridge_flow_ratio bridge_spacing_multiplier)},
     );
 }
 
@@ -137,7 +137,7 @@ sub new_from_spacing {
     my ($class, %args) = @_;
     
     return $class->_new_from_spacing(
-        @args{qw(spacing nozzle_diameter layer_height bridge)},
+        @args{qw(spacing nozzle_diameter layer_height bridge_spacing_multiplier)},
     );
 }
 

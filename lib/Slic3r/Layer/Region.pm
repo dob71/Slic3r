@@ -44,7 +44,7 @@ sub make_perimeters {
     my $ext_pspacing        = scale($ext_perimeter_flow->spacing_to($perimeter_flow));
     
     # overhang perimeters
-    my $overhang_flow       = $self->region->flow(FLOW_ROLE_PERIMETER, -1, 1, 0, -1, $self->layer->object);
+    my $overhang_flow       = $self->region->flow(FLOW_ROLE_PERIMETER, -1, 1, 0, -1, $self->layer->object, 0);
     my $mm3_per_mm_overhang = $overhang_flow->mm3_per_mm;
     
     # solid infill

@@ -1,4 +1,4 @@
-use Test::More tests => 6;
+use Test::More tests => 7;
 use strict;
 use warnings;
 
@@ -74,6 +74,37 @@ use Slic3r::Test;
     $test->();
     $config->set('bridge_flow_ratio', 2);
     $test->();
+}
+
+{
+    my $config = Slic3r::Config->new_from_defaults;
+    $config->set('bridge_speed', 99);
+    $config->set('bridge_flow_ratio', 1);
+    $config->set('bridge_spacing_multiplier', 2.0);
+    $config->set('cooling', 0);                 # to prevent speeds from being altered
+    $config->set('first_layer_speed', '100%');  # to prevent speeds from being altered
+    $config->set('bridge_flow_ratio', 0.5);
+
+    my $test = sub {
+        my $dist_E = 0.0;
+        my $print = Slic3r::Test::init_print('overhang', config => $config);
+        Slic3r::GCode::Reader->new->parse(my $gcode = Slic3r::Test::gcode($print), sub {
+            my ($self, $cmd, $args, $info) = @_;
+            if ($info->{extruding}) {
+                $dist_E += $info->{dist_E};
+            }
+        });
+        return $dist_E;
+    };
+    
+    $config->set('bridge_spacing_multiplier', 1.1);
+    my $dist_E = $test->();
+    $config->set('bridge_spacing_multiplier', 2.0);
+    my $dist_E_2 = $test->();
+    $config->set('bridge_spacing_multiplier', 0.5);
+    my $dist_E_p5 = $test->();
+    ok !($dist_E_2 >= $dist_E || $dist_E >= $dist_E_p5),
+            "expected higher bridge_spacing_multiplier causing lower extrusion amount, multiplier values (1.1, 2, 0.5), E-distances ($dist_E, $dist_E_2, $dist_E_p5)";
 }
 
 __END__

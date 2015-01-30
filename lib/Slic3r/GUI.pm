@@ -5,6 +5,9 @@ use utf8;
 
 use File::Basename qw(basename);
 use FindBin;
+use File::Basename;
+use File::HomeDir;
+
 use Slic3r::GUI::AboutDialog;
 use Slic3r::GUI::BedShapeDialog;
 use Slic3r::GUI::ConfigWizard;
@@ -72,9 +75,9 @@ sub OnInit {
     Slic3r::debugf "wxWidgets version %s, Wx version %s\n", &Wx::wxVERSION_STRING, $Wx::VERSION;
     
     $self->{notifier} = Slic3r::GUI::Notifier->new;
-    
+
     # locate or create data directory
-    $datadir ||= Wx::StandardPaths::Get->GetUserDataDir;
+    $datadir ||= Slic3r::Config->GetConfigDir();
     my $enc_datadir = Slic3r::encode_path($datadir);
     Slic3r::debugf "Data directory: %s\n", $datadir;
     

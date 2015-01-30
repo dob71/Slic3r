@@ -1,6 +1,7 @@
 #include "Point.hpp"
 #include "Line.hpp"
 #include "MultiPoint.hpp"
+#include <algorithm>
 #include <cmath>
 #include <sstream>
 
@@ -103,6 +104,32 @@ Point::nearest_point_index(const PointConstPtrs &points) const
     return idx;
 }
 
+/* This method finds the point that is closest to both this point and the supplied one */
+size_t
+Point::nearest_waypoint_index(const Points &points, const Point &dest) const
+{
+    size_t idx = -1;
+    double distance = -1;  // double because long is limited to 2147483647 on some platforms and it's not enough
+    
+    for (Points::const_iterator p = points.begin(); p != points.end(); ++p) {
+        // distance from this to candidate
+        double d = pow(this->x - p->x, 2) + pow(this->y - p->y, 2);
+        
+        // distance from candidate to dest
+        d += pow(p->x - dest.x, 2) + pow(p->y - dest.y, 2);
+        
+        // if the total distance is greater than current min distance, ignore it
+        if (distance != -1 && d > distance) continue;
+        
+        idx = p - points.begin();
+        distance = d;
+        
+        if (distance < EPSILON) break;
+    }
+    
+    return idx;
+}
+
 int
 Point::nearest_point_index(const PointPtrs &points) const
 {
@@ -122,6 +149,15 @@ Point::nearest_point(const Points &points, Point* point) const
     return true;
 }
 
+bool
+Point::nearest_waypoint(const Points &points, const Point &dest, Point* point) const
+{
+    int idx = this->nearest_waypoint_index(points, dest);
+    if (idx == -1) return false;
+    *point = points.at(idx);
+    return true;
+}
+
 double
 Point::distance_to(const Point &point) const
 {
@@ -130,8 +166,31 @@ Point::distance_to(const Point &point) const
     return sqrt(dx*dx + dy*dy);
 }
 
+/* distance to the closest point of line */
 double
 Point::distance_to(const Line &line) const
+{
+    const double dx = line.b.x - line.a.x;
+    const double dy = line.b.y - line.a.y;
+    
+    const double l2 = dx*dx + dy*dy;  // avoid a sqrt
+    if (l2 == 0.0) return this->distance_to(line.a);   // line.a == line.b case
+    
+    // Consider the line extending the segment, parameterized as line.a + t (line.b - line.a).
+    // We find projection of this point onto the line. 
+    // It falls where t = [(this-line.a) . (line.b-line.a)] / |line.b-line.a|^2
+    const double t = ((this->x - line.a.x) * dx + (this->y - line.a.y) * dy) / l2;
+    if (t < 0.0)      return this->distance_to(line.a);  // beyond the 'a' end of the segment
+    else if (t > 1.0) return this->distance_to(line.b);  // beyond the 'b' end of the segment
+    Point projection(
+        line.a.x + t * dx,
+        line.a.y + t * dy
+    );
+    return this->distance_to(projection);
+}
+
+double
+Point::perp_distance_to(const Line &line) const
 {
     if (line.a.coincides_with(line.b)) return this->distance_to(line.a);
     

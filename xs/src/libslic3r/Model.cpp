@@ -13,7 +13,7 @@ Model::Model(const Model &other)
     // copy objects
     this->objects.reserve(other.objects.size());
     for (ModelObjectPtrs::const_iterator i = other.objects.begin(); i != other.objects.end(); ++i)
-        this->add_object(**i);
+        this->add_object(**i, true);
 }
 
 Model& Model::operator= (Model other)
@@ -520,6 +520,9 @@ ModelObject::scale(const Pointf3 &versor)
     for (ModelVolumePtrs::const_iterator v = this->volumes.begin(); v != this->volumes.end(); ++v) {
         (*v)->mesh.scale(versor);
     }
+    
+    // reset origin translation since it doesn't make sense anymore
+    this->origin_translation = Pointf3(0,0,0);
     this->invalidate_bounding_box();
 }
 
@@ -618,6 +621,7 @@ ModelObject::split(ModelObjectPtrs* new_objects)
         new_volume->material_id(volume->material_id());
         
         new_objects->push_back(new_object);
+        delete *mesh;
     }
     
     return;

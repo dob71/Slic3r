@@ -10,6 +10,7 @@ use File::HomeDir;
 
 use Slic3r::GUI::AboutDialog;
 use Slic3r::GUI::BedShapeDialog;
+use Slic3r::GUI::BonjourBrowser;
 use Slic3r::GUI::ConfigWizard;
 use Slic3r::GUI::MainFrame;
 use Slic3r::GUI::Notifier;
@@ -19,7 +20,6 @@ use Slic3r::GUI::Plater::2DToolpaths;
 use Slic3r::GUI::Plater::3D;
 use Slic3r::GUI::Plater::ObjectPartsPanel;
 use Slic3r::GUI::Plater::ObjectCutDialog;
-use Slic3r::GUI::Plater::ObjectPreviewDialog;
 use Slic3r::GUI::Plater::ObjectSettingsDialog;
 use Slic3r::GUI::Plater::OverrideSettingsPanel;
 use Slic3r::GUI::Preferences;
@@ -29,7 +29,8 @@ use Slic3r::GUI::OptionsGroup::Field;
 use Slic3r::GUI::SimpleTab;
 use Slic3r::GUI::Tab;
 
-our $have_OpenGL = eval "use Slic3r::GUI::PreviewCanvas; 1";
+our $have_OpenGL = eval "use Slic3r::GUI::3DScene; 1";
+our $have_LWP    = eval "use LWP::UserAgent; 1";
 
 use Wx 0.9901 qw(:bitmap :dialog :icon :id :misc :systemsettings :toplevelwindow
     :filedialog);
@@ -231,7 +232,7 @@ sub have_version_check {
     my ($self) = @_;
     
     # return an explicit 0
-    return ($Slic3r::have_threads && $Slic3r::build && eval "use LWP::UserAgent; 1") || 0;
+    return ($Slic3r::have_threads && $Slic3r::build && $have_LWP) || 0;
 }
 
 sub check_version {

@@ -27,16 +27,19 @@ my %prereqs = qw(
 );
 my %recommends = qw(
     Class::XSAccessor               0
+    LWP::UserAgent                  0
+    Net::Bonjour                    0
     XML::SAX::ExpatXS               0
 );
 
 my $sudo    = grep { $_ eq '--sudo' } @ARGV;
 my $gui     = grep { $_ eq '--gui' } @ARGV;
 my $xs_only = grep { $_ eq '--xs' }  @ARGV;
+my $fix_wx  = grep { $_ eq '--wx' }  @ARGV;
 if ($gui) {
     %prereqs = qw(
     Class::Accessor                 0
-    local_packages\Wx-0.9923.tar.gz 0
+    Wx                              0.9918
     );
     %recommends = qw(
     Growl::GNTP                     0.15
@@ -45,6 +48,10 @@ if ($gui) {
     );
 } elsif ($xs_only) {
     %prereqs = %recommends = ();
+} elsif ($fix_wx) {
+    %prereqs = qw(
+    local_packages\Wx-0.9923.tar.gz 0
+    );
 }
 
 my @missing_prereqs = ();
@@ -108,7 +115,9 @@ EOF
     my %modules = (%prereqs, %recommends);
     foreach my $module (sort keys %modules) {
         my $version = $modules{$module};
-        my @cmd = ($cpanm, @cpanm_args, "$module~$version");
+        my @cmd = ($cpanm, @cpanm_args);
+        push @cmd, '-f', if $module eq 'OpenGL';  # temporary workaround for upstream bug in test
+        push @cmd, "$module~$version";
         if ($module eq 'XML::SAX::ExpatXS' && $^O eq 'MSWin32') {
             my $mingw = 'C:\dev\CitrusPerl\mingw64';
             $mingw = 'C:\dev\CitrusPerl\mingw32' if !-d $mingw;

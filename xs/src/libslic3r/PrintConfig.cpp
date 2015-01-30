@@ -134,11 +134,11 @@ PrintConfigDef::build_def() {
     Options["external_fill_pattern"].enum_values.push_back("hilbertcurve");
     Options["external_fill_pattern"].enum_values.push_back("archimedeanchords");
     Options["external_fill_pattern"].enum_values.push_back("octagramspiral");
-    Options["external_fill_pattern"].enum_labels.push_back("rectilinear");
-    Options["external_fill_pattern"].enum_labels.push_back("concentric");
-    Options["external_fill_pattern"].enum_labels.push_back("hilbertcurve (slow)");
-    Options["external_fill_pattern"].enum_labels.push_back("archimedeanchords (slow)");
-    Options["external_fill_pattern"].enum_labels.push_back("octagramspiral (slow)");
+    Options["external_fill_pattern"].enum_labels.push_back("Rectilinear");
+    Options["external_fill_pattern"].enum_labels.push_back("Concentric");
+    Options["external_fill_pattern"].enum_labels.push_back("Hilbert Curve");
+    Options["external_fill_pattern"].enum_labels.push_back("Archimedean Chords");
+    Options["external_fill_pattern"].enum_labels.push_back("Octagram Spiral");
     Options["external_fill_pattern"].aliases.push_back("solid_fill_pattern");
 
     Options["external_perimeter_extrusion_width"].type = coFloatOrPercent;
@@ -301,14 +301,14 @@ PrintConfigDef::build_def() {
     Options["fill_pattern"].enum_values.push_back("hilbertcurve");
     Options["fill_pattern"].enum_values.push_back("archimedeanchords");
     Options["fill_pattern"].enum_values.push_back("octagramspiral");
-    Options["fill_pattern"].enum_labels.push_back("rectilinear");
-    Options["fill_pattern"].enum_labels.push_back("line");
-    Options["fill_pattern"].enum_labels.push_back("concentric");
-    Options["fill_pattern"].enum_labels.push_back("honeycomb");
-    Options["fill_pattern"].enum_labels.push_back("3D honeycomb");
-    Options["fill_pattern"].enum_labels.push_back("hilbertcurve");
-    Options["fill_pattern"].enum_labels.push_back("archimedeanchords");
-    Options["fill_pattern"].enum_labels.push_back("octagramspiral");
+    Options["fill_pattern"].enum_labels.push_back("Rectilinear");
+    Options["fill_pattern"].enum_labels.push_back("Line");
+    Options["fill_pattern"].enum_labels.push_back("Concentric");
+    Options["fill_pattern"].enum_labels.push_back("Honeycomb");
+    Options["fill_pattern"].enum_labels.push_back("3D Honeycomb");
+    Options["fill_pattern"].enum_labels.push_back("Hilbert Curve");
+    Options["fill_pattern"].enum_labels.push_back("Archimedean Chords");
+    Options["fill_pattern"].enum_labels.push_back("Octagram Spiral");
 
     Options["first_layer_acceleration"].type = coFloat;
     Options["first_layer_acceleration"].label = "First layer";
@@ -507,6 +507,16 @@ PrintConfigDef::build_def() {
     Options["nozzle_diameter"].tooltip = "This is the diameter of your extruder nozzle (for example: 0.5, 0.35 etc.)";
     Options["nozzle_diameter"].sidetext = "mm";
     Options["nozzle_diameter"].cli = "nozzle-diameter=f@";
+
+    Options["octoprint_apikey"].type = coString;
+    Options["octoprint_apikey"].label = "API Key";
+    Options["octoprint_apikey"].tooltip = "Slic3r can upload G-code files to OctoPrint. This field should contain the API Key required for authentication.";
+    Options["octoprint_apikey"].cli = "octoprint-apikey=s";
+
+    Options["octoprint_host"].type = coString;
+    Options["octoprint_host"].label = "Host or IP";
+    Options["octoprint_host"].tooltip = "Slic3r can upload G-code files to OctoPrint. This field should contain the hostname or IP address of the OctoPrint instance.";
+    Options["octoprint_host"].cli = "octoprint-host=s";
 
     Options["only_retract_when_crossing_perimeters"].type = coBool;
     Options["only_retract_when_crossing_perimeters"].label = "Only retract when crossing perimeters";
@@ -945,8 +955,13 @@ PrintConfigDef::build_def() {
     Options["use_relative_e_distances"].tooltip = "If your firmware requires relative E values, check this, otherwise leave it unchecked. Most firmwares use absolute values.";
     Options["use_relative_e_distances"].cli = "use-relative-e-distances!";
 
+    Options["use_volumetric_e"].type = coBool;
+    Options["use_volumetric_e"].label = "Use volumetric E";
+    Options["use_volumetric_e"].tooltip = "This experimental setting uses outputs the E values in cubic millimeters instead of linear millimeters. If your firmware doesn't already know filament diameter(s), you can put commands like 'M200 D[filament_diameter_0] T0' in your start G-code in order to turn volumetric mode on and use the filament diameter associated to the filament selected in Slic3r. This is only supported in recent Marlin.";
+    Options["use_volumetric_e"].cli = "use-volumetric-e!";
+
     Options["vibration_limit"].type = coFloat;
-    Options["vibration_limit"].label = "Vibration limit";
+    Options["vibration_limit"].label = "Vibration limit (deprecated)";
     Options["vibration_limit"].tooltip = "This experimental option will slow down those moves hitting the configured frequency limit. The purpose of limiting vibrations is to avoid mechanical resonance. Set zero to disable.";
     Options["vibration_limit"].sidetext = "Hz";
     Options["vibration_limit"].cli = "vibration-limit=f";

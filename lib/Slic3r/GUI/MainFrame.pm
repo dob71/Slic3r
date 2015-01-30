@@ -201,10 +201,10 @@ sub _init_menubar {
         $self->_append_menu_item($self->{plater_menu}, "Export G-code...", 'Export current plate as G-code', sub {
             $plater->export_gcode;
         });
-        $self->_append_menu_item($self->{plater_menu}, "Export STL...", 'Export current plate as STL', sub {
+        $self->_append_menu_item($self->{plater_menu}, "Export plate as STL...", 'Export current plate as STL', sub {
             $plater->export_stl;
         });
-        $self->_append_menu_item($self->{plater_menu}, "Export AMF...", 'Export current plate as AMF', sub {
+        $self->_append_menu_item($self->{plater_menu}, "Export plate as AMF...", 'Export current plate as AMF', sub {
             $plater->export_amf;
         });
         
@@ -673,7 +673,11 @@ sub config {
 sub check_unsaved_changes {
     my $self = shift;
     
-    my @dirty = map $_->title, grep $_->is_dirty, values %{$self->{options_tabs}};
+    my @dirty = ();
+    foreach my $tab (values %{$self->{options_tabs}}) {
+        push @dirty, $tab->title if $tab->is_dirty;
+    }
+    
     if (@dirty) {
         my $titles = join ', ', @dirty;
         my $confirm = Wx::MessageDialog->new($self, "You have unsaved changes ($titles). Discard changes and continue anyway?",

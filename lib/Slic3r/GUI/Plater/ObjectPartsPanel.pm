@@ -68,7 +68,7 @@ sub new {
     # right pane with preview canvas
     my $canvas;
     if ($Slic3r::GUI::have_OpenGL) {
-        $canvas = $self->{canvas} = Slic3r::GUI::PreviewCanvas->new($self);
+        $canvas = $self->{canvas} = Slic3r::GUI::3DScene->new($self);
         $canvas->load_object($self->{model_object});
         $canvas->set_auto_bed_shape;
         $canvas->SetSize([500,500]);
@@ -224,13 +224,7 @@ sub on_btn_load {
         }
     }
     
-    $self->reload_tree;
-    if ($self->{canvas}) {
-        $self->{canvas}->reset_objects;
-        $self->{canvas}->load_object($self->{model_object});
-        $self->{canvas}->set_bounding_box($self->{model_object}->bounding_box);
-        $self->{canvas}->Render;
-    }
+    $self->_parts_changed;
 }
 
 sub on_btn_delete {
@@ -250,9 +244,17 @@ sub on_btn_delete {
         $self->{parts_changed} = 1;
     }
     
+    $self->_parts_changed;
+}
+
+sub _parts_changed {
+    my ($self) = @_;
+    
     $self->reload_tree;
     if ($self->{canvas}) {
+        $self->{canvas}->reset_objects;
         $self->{canvas}->load_object($self->{model_object});
+        $self->{canvas}->zoom_to_volumes;
         $self->{canvas}->Render;
     }
 }

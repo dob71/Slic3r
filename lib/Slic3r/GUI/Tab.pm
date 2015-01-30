@@ -6,7 +6,7 @@ use utf8;
 use File::Basename qw(basename);
 use List::Util qw(first);
 use Wx qw(:bookctrl :dialog :keycode :icon :id :misc :panel :sizer :treectrl :window
-    wxTheApp);
+    :button wxTheApp);
 use Wx::Event qw(EVT_BUTTON EVT_CHOICE EVT_KEY_DOWN EVT_TREE_SEL_CHANGED);
 use base qw(Wx::Panel Class::Accessor);
 
@@ -36,8 +36,10 @@ sub new {
         $self->{presets_choice}->SetFont($Slic3r::GUI::small_font);
         
         # buttons
-        $self->{btn_save_preset} = Wx::BitmapButton->new($self, -1, Wx::Bitmap->new("$Slic3r::var/disk.png", wxBITMAP_TYPE_PNG));
-        $self->{btn_delete_preset} = Wx::BitmapButton->new($self, -1, Wx::Bitmap->new("$Slic3r::var/delete.png", wxBITMAP_TYPE_PNG));
+        $self->{btn_save_preset} = Wx::BitmapButton->new($self, -1, Wx::Bitmap->new("$Slic3r::var/disk.png", wxBITMAP_TYPE_PNG), 
+            wxDefaultPosition, [16,16], wxBORDER_NONE);
+        $self->{btn_delete_preset} = Wx::BitmapButton->new($self, -1, Wx::Bitmap->new("$Slic3r::var/delete.png", wxBITMAP_TYPE_PNG), 
+            wxDefaultPosition, [16,16], wxBORDER_NONE);
         $self->{btn_save_preset}->SetToolTipString("Save current " . lc($self->title));
         $self->{btn_delete_preset}->SetToolTipString("Delete this preset");
         $self->{btn_delete_preset}->Disable;
@@ -939,7 +941,9 @@ sub build {
     $self->init_config_options(qw(
         bed_shape z_offset
         gcode_flavor use_relative_e_distances
+        octoprint_host octoprint_apikey
         use_firmware_retraction pressure_advance vibration_limit
+        use_volumetric_e
         start_gcode end_gcode layer_gcode toolchange_gcode
         nozzle_diameter extruder_offset
         retract_length retract_lift retract_speed retract_restart_extra retract_before_travel retract_layer_change wipe
@@ -987,11 +991,6 @@ sub build {
             $optgroup->append_single_option_line('z_offset');
         }
         {
-            my $optgroup = $page->new_optgroup('Firmware');
-            $optgroup->append_single_option_line('gcode_flavor');
-            $optgroup->append_single_option_line('use_relative_e_distances');
-        }
-        {
             my $optgroup = $page->new_optgroup('Capabilities');
             {
                 my $option = Slic3r::GUI::OptionsGroup::Option->new(
@@ -1013,8 +1012,78 @@ sub build {
             });
         }
         {
+            my $optgroup = $page->new_optgroup('OctoPrint upload');
+            
+            # append two buttons to the Host line
+            my $octoprint_host_browse = sub {
+                my ($parent) = @_;
+                
+                my $btn = Wx::Button->new($parent, -1, "Browse…", wxDefaultPosition, wxDefaultSize, wxBU_LEFT);
+                $btn->SetFont($Slic3r::GUI::small_font);
+                if ($Slic3r::GUI::have_button_icons) {
+                    $btn->SetBitmap(Wx::Bitmap->new("$Slic3r::var/zoom.png", wxBITMAP_TYPE_PNG));
+                }
+                
+                if (!eval "use Net::Bonjour; 1") {
+                    $btn->Disable;
+                }
+                
+                EVT_BUTTON($self, $btn, sub {
+                    my $dlg = Slic3r::GUI::BonjourBrowser->new($self);
+                    if ($dlg->ShowModal == wxID_OK) {
+                        my $value = $dlg->GetValue;
+                        $self->{config}->set('octoprint_host', $value);
+                        $self->update_dirty;
+                        $self->_on_value_change('octoprint_host', $value);
+                        $self->reload_config;
+                    }
+                });
+                
+                return $btn;
+            };
+            my $octoprint_host_test = sub {
+                my ($parent) = @_;
+                
+                my $btn = $self->{octoprint_host_test_btn} = Wx::Button->new($parent, -1, "Test", wxDefaultPosition, wxDefaultSize, wxBU_LEFT);
+                $btn->SetFont($Slic3r::GUI::small_font);
+                if ($Slic3r::GUI::have_button_icons) {
+                    $btn->SetBitmap(Wx::Bitmap->new("$Slic3r::var/wrench.png", wxBITMAP_TYPE_PNG));
+                }
+                
+                EVT_BUTTON($self, $btn, sub {
+                    my $ua = LWP::UserAgent->new;
+                    $ua->timeout(10);
+    
+                    my $res = $ua->post(
+                        "http://" . $self->{config}->octoprint_host . "/api/version",
+                        'X-Api-Key' => $self->{config}->octoprint_apikey,
+                    );
+                    if ($res->is_success) {
+                        Slic3r::GUI::show_info($self, "Connection to OctoPrint works correctly.", "Success!");
+                    } else {
+                        Slic3r::GUI::show_error($self,
+                            "I wasn't able to connect to OctoPrint (" . $res->status_line . "). "
+                            . "Check hostname and OctoPrint version (at least 1.1.0 is required).");
+                    }
+                });
+                return $btn;
+            };
+            
+            my $host_line = $optgroup->create_single_option_line('octoprint_host');
+            $host_line->append_widget($octoprint_host_browse);
+            $host_line->append_widget($octoprint_host_test);
+            $optgroup->append_line($host_line);
+            $optgroup->append_single_option_line('octoprint_apikey');
+        }
+        {
+            my $optgroup = $page->new_optgroup('Firmware');
+            $optgroup->append_single_option_line('gcode_flavor');
+        }
+        {
             my $optgroup = $page->new_optgroup('Advanced');
+            $optgroup->append_single_option_line('use_relative_e_distances');
             $optgroup->append_single_option_line('use_firmware_retraction');
+            $optgroup->append_single_option_line('use_volumetric_e');
             $optgroup->append_single_option_line('pressure_advance');
             $optgroup->append_single_option_line('vibration_limit');
         }
@@ -1144,6 +1213,13 @@ sub _update {
     my ($self) = @_;
     
     my $config = $self->{config};
+    
+    if ($config->get('octoprint_host') && eval "use LWP::UserAgent; 1") {
+        $self->{octoprint_host_test_btn}->Enable;
+    } else {
+        $self->{octoprint_host_test_btn}->Disable;
+    }
+    $self->get_field('octoprint_apikey')->toggle($config->get('octoprint_host'));
     
     my $have_multiple_extruders = $self->{extruders_count} > 1;
     $self->get_field('toolchange_gcode')->toggle($have_multiple_extruders);
@@ -1335,8 +1411,8 @@ sub config {
         }
         
         # apply preset values on top of defaults
+        my $config = Slic3r::Config->new_from_defaults(@$keys);
         my $external_config = Slic3r::Config->load($self->file);
-        my $config = Slic3r::Config->new;
         $config->set($_, $external_config->get($_))
             for grep $external_config->has($_), @$keys;
         

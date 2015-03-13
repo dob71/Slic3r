@@ -51,7 +51,7 @@ if ($gui) {
     %prereqs = %recommends = ();
 } elsif ($fix_wx) {
     %prereqs = qw(
-    local_packages\Wx-0.9923.tar.gz 0
+    local_packages/Wx-0.9923.tar.gz 0
     );
 }
 

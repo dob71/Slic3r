@@ -12,6 +12,7 @@ my %prereqs = qw(
     ExtUtils::ParseXS               3.22
     File::Basename                  0
     File::Spec                      0
+    File::HomeDir                   0
     Getopt::Long                    0
     Math::PlanePath                 53
     Module::Build::WithXSpp         0.14
